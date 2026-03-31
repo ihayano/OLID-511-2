@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project Mesh: Ridgecrest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="crt-shell">
+      <div class="scanlines"></div>
+      <div class="crt-flicker"></div>
+
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Emergency Mesh Operations Console</p>
+          <h1>PROJECT MESH: RIDGECREST</h1>
+        </div>
+        <div class="topbar-actions">
+          <button id="sound-toggle" class="secondary-button" type="button">Sound: ON</button>
+          <button id="restart-button" class="secondary-button" type="button">Restart Run</button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="panel terminal-panel">
+          <div class="panel-header">
+            <span>Terminal Feed</span>
+            <span id="operator-badge">Operator: UNASSIGNED</span>
+          </div>
+          <div id="terminal" class="terminal" aria-live="polite"></div>
+
+          <div id="input-zone" class="input-zone hidden">
+            <label id="input-label" for="operator-input">Input</label>
+            <div class="input-row">
+              <input
+                id="operator-input"
+                name="operator-input"
+                type="text"
+                maxlength="24"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="Enter operator name"
+              />
+              <button id="input-submit" type="button">Transmit</button>
+            </div>
+          </div>
+
+          <div id="choice-panel" class="choice-panel"></div>
+        </section>
+
+        <aside class="sidebar">
+          <section class="panel status-panel">
+            <div class="panel-header">
+              <span>Field Status</span>
+              <span>T-72H</span>
+            </div>
+            <div class="stats-grid">
+              <article class="stat-card">
+                <span class="stat-label">Budget</span>
+                <strong id="budget-stat">$250</strong>
+              </article>
+              <article class="stat-card">
+                <span class="stat-label">Coverage</span>
+                <strong id="coverage-stat">0%</strong>
+              </article>
+              <article class="stat-card">
+                <span class="stat-label">Encryption</span>
+                <strong id="encryption-stat">OFF</strong>
+              </article>
+              <article class="stat-card">
+                <span class="stat-label">Supplies</span>
+                <strong id="supplies-stat">0</strong>
+              </article>
+            </div>
+            <div class="status-meta">
+              <div>
+                <span class="meta-label">Hardware</span>
+                <strong id="hardware-stat">Not selected</strong>
+              </div>
+              <div>
+                <span class="meta-label">Nodes Deployed</span>
+                <strong id="nodes-stat">0</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel map-panel">
+            <div class="panel-header">
+              <span>Ridgecrest Deployment Map</span>
+              <span id="map-summary">0 / 6 resolved</span>
+            </div>
+            <div id="map-grid" class="map-grid"></div>
+          </section>
+
+          <section class="panel node-panel">
+            <div class="panel-header">
+              <span>Deployment Ledger</span>
+              <span>Live</span>
+            </div>
+            <ul id="node-list" class="node-list"></ul>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <noscript>
+      <div class="noscript-warning">
+        JavaScript is required to boot the Project Mesh terminal.
+      </div>
+    </noscript>
+
+    <script src="script.js"></script>
+  </body>
+</html>
