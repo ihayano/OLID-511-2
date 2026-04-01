@@ -1,4 +1,4 @@
-# OLID-511-2 — Project Mesh: Ridgecrest
+# Ian Hayano OLID-511 — Project Mesh: Ridgecrest
 
 **Repository:** [github.com/ihayano/OLID-511-2](https://github.com/ihayano/OLID-511-2)
 
