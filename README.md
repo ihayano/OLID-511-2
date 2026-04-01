@@ -2,7 +2,7 @@
 
 **Repository:** [github.com/ihayano/OLID-511-2](https://github.com/ihayano/OLID-511-2)
 
-A single-page, choice-driven **Meshtastic / LoRa** story game: you are a student building a community mesh before a storm hits Ridgecrest. Budget, node inventory, travel time, add-ons, and install choices shape coverage, supplies, and which ending you get.
+A single-page, choice-driven survival story game: you are a student building a community decentralized communication network before a storm hits Ridgecrest. Budget, node inventory, travel time, add-ons, and install choices shape coverage, supplies, and which ending you get.
 
 ## Play
 
