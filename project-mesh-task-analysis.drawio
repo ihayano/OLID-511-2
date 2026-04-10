@@ -1,0 +1,165 @@
+<mxfile host="app.diagrams.net" modified="2026-03-31T16:40:00.000Z" agent="Cursor" version="26.0.11" type="device">
+  <diagram id="project-mesh-task-analysis" name="Task Analysis Flow">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="PROJECT MESH: RIDGECREST&#xa;Task Analysis Flow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0b2e13;strokeColor=#6dff9d;fontColor=#d8ffe3;fontStyle=1;fontSize=24;" vertex="1" parent="1">
+          <mxGeometry x="540" y="20" width="420" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="start" value="START&#xa;Receive GDD / project brief" style="ellipse;whiteSpace=wrap;html=1;fillColor=#163d1d;strokeColor=#6dff9d;fontColor=#d8ffe3;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="640" y="130" width="220" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="requirements" value="Analyze Requirements&#xa;- Genre: text-based survival sim&#xa;- Tech: HTML, CSS, JS&#xa;- Tone: retro CRT terminal&#xa;- Goal: playable browser experience" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#102818;strokeColor=#78b98d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="560" y="250" width="380" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="state" value="Define Core State Model&#xa;- Budget&#xa;- Coverage&#xa;- Encryption&#xa;- Supplies&#xa;- Nodes deployed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#102818;strokeColor=#78b98d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="90" y="450" width="250" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="structure" value="Phase 1: Structure &amp; Logic&#xa;- Single-page shell&#xa;- Terminal feed&#xa;- Input + choice controls&#xa;- Sequential scene flow" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0d2014;strokeColor=#6dff9d;fontColor=#d8ffe3;startSize=28;" vertex="1" parent="1">
+          <mxGeometry x="40" y="400" width="400" height="350" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ui-shell" value="Build UI Shell&#xa;- Header&#xa;- Terminal panel&#xa;- Status cards&#xa;- Map + ledger" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="90" y="600" width="140" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="engine" value="Build Game Engine&#xa;- Typewriter output&#xa;- Scene prompts&#xa;- State mutations&#xa;- Replay handling" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="250" y="600" width="150" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="content" value="Phase 2: Content Injection&#xa;- Narrative scripting&#xa;- Dialogue branches&#xa;- Encounter outcomes&#xa;- Budget / coverage effects" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0d2014;strokeColor=#6dff9d;fontColor=#d8ffe3;startSize=28;" vertex="1" parent="1">
+          <mxGeometry x="480" y="400" width="520" height="410" as="geometry" />
+        </mxCell>
+
+        <mxCell id="prologue" value="Prologue&#xa;Storm warning + operator identity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="520" y="450" width="210" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act1" value="Act I: Workbench&#xa;- Hardware choice&#xa;- Firmware choice&#xa;- Frequency selection&#xa;- Preset + security" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="760" y="450" width="210" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act2" value="Act II: Community Deployment&#xa;- Science building&#xa;- Valley West&#xa;- Sugar Beet Co-op&#xa;- Tesseract Apartments&#xa;- Radio Station&#xa;- Bast Health Center" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="520" y="590" width="450" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act3" value="Act III: Crisis &amp; Troubleshooting&#xa;- Ping test&#xa;- Emergency $40 fix&#xa;- Storm event&#xa;- Mutual aid request" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="520" y="745" width="450" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="polish" value="Phase 3: Visual Polish &amp; Audio&#xa;- Scanlines overlay&#xa;- CRT flicker animation&#xa;- Retro color system&#xa;- Beeps / alarm / typewriter audio" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0d2014;strokeColor=#6dff9d;fontColor=#d8ffe3;startSize=28;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="400" width="330" height="240" as="geometry" />
+        </mxCell>
+
+        <mxCell id="crt" value="Presentation Layer&#xa;Modern-retro terminal aesthetic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="1085" y="455" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="audio" value="Feedback Layer&#xa;Menu beeps, alarm cue, typing clicks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="1085" y="550" width="240" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="balance" value="Phase 4: Playtesting &amp; Balancing&#xa;- Is $250 tight but winnable?&#xa;- Are dead zones meaningful?&#xa;- Are endings reachable and distinct?&#xa;- Does replay reveal tradeoffs?" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0d2014;strokeColor=#6dff9d;fontColor=#d8ffe3;startSize=28;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="680" width="330" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tests" value="Verification Pass&#xa;- Syntax check&#xa;- Local server smoke test&#xa;- Headless browser boot check" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="1085" y="735" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="adjust" value="Adjust Narrative / Costs / Signals&#xa;until tension, clarity, and outcome spread feel right" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="1085" y="845" width="240" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ending-decision" value="Ending Resolution&#xa;Evaluate coverage, security, supplies, and dead zones" style="rhombus;whiteSpace=wrap;html=1;fillColor=#3a2c10;strokeColor=#ffd16a;fontColor=#fff0c7;" vertex="1" parent="1">
+          <mxGeometry x="610" y="890" width="280" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ending-a" value="Ending A&#xa;Resilient Utopia" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#163d1d;strokeColor=#6dff9d;fontColor=#d8ffe3;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="1060" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ending-b" value="Ending B&#xa;Fractured Lifeline" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3a2c10;strokeColor=#ffd16a;fontColor=#fff0c7;" vertex="1" parent="1">
+          <mxGeometry x="570" y="1060" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ending-c" value="Ending C&#xa;Open Frequency" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3a2c10;strokeColor=#ffd16a;fontColor=#fff0c7;" vertex="1" parent="1">
+          <mxGeometry x="790" y="1060" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ending-d" value="Ending D&#xa;Dark Age" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#401818;strokeColor=#ff7f7f;fontColor=#ffdada;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="1060" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="deliverable" value="DELIVERABLE&#xa;Playable browser-based text survival simulator" style="ellipse;whiteSpace=wrap;html=1;fillColor=#163d1d;strokeColor=#6dff9d;fontColor=#d8ffe3;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="1045" width="300" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" edge="1" parent="1" source="start" target="requirements" style="endArrow=block;endFill=1;strokeColor=#6dff9d;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="requirements" target="state" style="endArrow=block;endFill=1;strokeColor=#6dff9d;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="requirements" target="content" style="endArrow=block;endFill=1;strokeColor=#6dff9d;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="requirements" target="polish" style="endArrow=block;endFill=1;strokeColor=#6dff9d;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="state" target="ui-shell" style="endArrow=block;endFill=1;strokeColor=#6dff9d;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="state" target="engine" style="endArrow=block;endFill=1;strokeColor=#6dff9d;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="ui-shell" target="content" style="endArrow=block;endFill=1;strokeColor=#6dff9d;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="engine" target="content" style="endArrow=block;endFill=1;strokeColor=#6dff9d;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="content" target="polish" style="endArrow=block;endFill=1;strokeColor=#6dff9d;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="content" target="balance" style="endArrow=block;endFill=1;strokeColor=#6dff9d;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="polish" target="balance" style="endArrow=block;endFill=1;strokeColor=#6dff9d;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="act3" target="ending-decision" style="endArrow=block;endFill=1;strokeColor=#ffd16a;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="balance" target="adjust" style="endArrow=block;endFill=1;strokeColor=#6dff9d;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="adjust" target="content" style="endArrow=block;endFill=1;strokeColor=#6dff9d;dashed=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="balance" target="tests" style="endArrow=block;endFill=1;strokeColor=#6dff9d;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="ending-decision" target="ending-a" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e17" edge="1" parent="1" source="ending-decision" target="ending-b" style="endArrow=block;endFill=1;strokeColor=#ffd16a;" />
+        <mxCell id="e18" edge="1" parent="1" source="ending-decision" target="ending-c" style="endArrow=block;endFill=1;strokeColor=#ffd16a;" />
+        <mxCell id="e19" edge="1" parent="1" source="ending-decision" target="ending-d" style="endArrow=block;endFill=1;strokeColor=#ff7f7f;" />
+        <mxCell id="e20" edge="1" parent="1" source="ending-a" target="deliverable" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e21" edge="1" parent="1" source="ending-b" target="deliverable" style="endArrow=block;endFill=1;strokeColor=#ffd16a;" />
+        <mxCell id="e22" edge="1" parent="1" source="ending-c" target="deliverable" style="endArrow=block;endFill=1;strokeColor=#ffd16a;" />
+        <mxCell id="e23" edge="1" parent="1" source="ending-d" target="deliverable" style="endArrow=block;endFill=1;strokeColor=#ff7f7f;" />
+        <mxCell id="e24" edge="1" parent="1" source="prologue" target="act1" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e25" edge="1" parent="1" source="act1" target="act2" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e26" edge="1" parent="1" source="act2" target="act3" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e27" edge="1" parent="1" source="polish" target="crt" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e28" edge="1" parent="1" source="polish" target="audio" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
