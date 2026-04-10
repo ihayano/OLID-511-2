@@ -1,0 +1,188 @@
+<mxfile host="app.diagrams.net" modified="2026-03-31T16:50:00.000Z" agent="Cursor" version="26.0.11" type="device">
+  <diagram id="project-mesh-repo-flow" name="Repo Architecture Flow">
+    <mxGraphModel dx="1900" dy="1300" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="PROJECT MESH: RIDGECREST&#xa;Repository Architecture &amp; Runtime Flow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0b2e13;strokeColor=#6dff9d;fontColor=#d8ffe3;fontStyle=1;fontSize=24;" vertex="1" parent="1">
+          <mxGeometry x="580" y="20" width="520" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="repo" value="Repository Root&#xa;- index.html&#xa;- styles.css&#xa;- script.js&#xa;- README.md&#xa;- *.drawio diagrams" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0d2014;strokeColor=#6dff9d;fontColor=#d8ffe3;startSize=28;" vertex="1" parent="1">
+          <mxGeometry x="50" y="120" width="380" height="280" as="geometry" />
+        </mxCell>
+
+        <mxCell id="html" value="index.html&#xa;App shell and DOM anchors&#xa;- terminal&#xa;- input zone&#xa;- choice panel&#xa;- status cards&#xa;- map grid&#xa;- node ledger" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="85" y="180" width="150" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="css" value="styles.css&#xa;Presentation layer&#xa;- CRT shell&#xa;- scanlines&#xa;- flicker&#xa;- responsive layout&#xa;- cards / buttons" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="250" y="180" width="150" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="js" value="script.js&#xa;Runtime controller&#xa;- state model&#xa;- scene flow&#xa;- DOM rendering&#xa;- audio cues&#xa;- ending logic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="415" y="180" width="150" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="browser" value="Browser loads index.html" style="ellipse;whiteSpace=wrap;html=1;fillColor=#163d1d;strokeColor=#6dff9d;fontColor=#d8ffe3;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="650" y="140" width="250" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="boot" value="Boot Sequence&#xa;script.js runs:&#xa;- bindControls()&#xa;- refreshUi()&#xa;- startGame()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#102818;strokeColor=#78b98d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="620" y="250" width="310" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="state-init" value="createInitialState()&#xa;Builds gameplay state object&#xa;- budget, coverage, encryption&#xa;- supplies, nodesDeployed&#xa;- deployment flags&#xa;- locationStatuses map" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#102818;strokeColor=#78b98d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="620" y="420" width="310" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dom-map" value="DOM Reference Map&#xa;Cached elements for terminal, input, buttons, stats, map, and ledger" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#102818;strokeColor=#78b98d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="960" y="250" width="280" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="render" value="UI Render Pipeline" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0d2014;strokeColor=#6dff9d;fontColor=#d8ffe3;startSize=28;" vertex="1" parent="1">
+          <mxGeometry x="980" y="400" width="400" height="340" as="geometry" />
+        </mxCell>
+
+        <mxCell id="refresh" value="refreshUi()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="445" width="130" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stats" value="updateStats()&#xa;Writes budget, coverage, encryption, supplies, hardware, operator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="1005" y="545" width="160" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="map" value="renderMap()&#xa;Rebuilds six location cards&#xa;with status badges and notes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="1175" y="545" width="160" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ledger" value="renderNodeLedger()&#xa;Lists deployed nodes&#xa;and deployment notes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="1025" y="670" width="150" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="terminal-typing" value="Terminal Output System" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0d2014;strokeColor=#6dff9d;fontColor=#d8ffe3;startSize=28;" vertex="1" parent="1">
+          <mxGeometry x="50" y="450" width="500" height="330" as="geometry" />
+        </mxCell>
+
+        <mxCell id="type-line" value="typeLine() / typeBlock()&#xa;Append typed narrative to terminal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="90" y="510" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="choices" value="promptChoice()&#xa;Build choice buttons for scene decisions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="310" y="510" width="190" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="input" value="promptTextInput()&#xa;Collect operator callsign through input zone" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="90" y="625" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="controls" value="bindControls()&#xa;Restart + sound toggle listeners" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="310" y="625" width="190" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="audio-system" value="Audio Helpers&#xa;getAudioContext(), playTone(), playMenuBeep(), playAlarm()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#102818;strokeColor=#78b98d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="240" y="730" width="210" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="game-flow" value="Gameplay Runtime Flow" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0d2014;strokeColor=#6dff9d;fontColor=#d8ffe3;startSize=28;" vertex="1" parent="1">
+          <mxGeometry x="580" y="620" width="360" height="520" as="geometry" />
+        </mxCell>
+
+        <mxCell id="intro" value="introSequence()&#xa;Storm warning + operator name" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="665" y="680" width="190" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="workbench" value="actWorkbench()&#xa;Hardware / firmware / frequency / preset / security" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="645" y="775" width="230" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="deployment" value="actDeployment()&#xa;Route player through six location handlers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="665" y="880" width="190" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="diagnostics" value="actDiagnostics()&#xa;Dead-zone detection + optional $40 patch + storm hit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="640" y="975" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mutual-aid" value="actMutualAid()&#xa;Sarah request and supply gain" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="665" y="1080" width="190" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="locations" value="Deployment Handlers&#xa;deployScience(), deployValley(), deploySugar(), deployApartments(), deployRadio(), deployHealth()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#102818;strokeColor=#78b98d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="965" y="800" width="300" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mutators" value="State Mutation Helpers&#xa;changeBudget(), addCoverage(), addSupplies(), setLocation(), addNode()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#102818;strokeColor=#78b98d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="980" y="950" width="270" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ending" value="determineEnding()" style="rhombus;whiteSpace=wrap;html=1;fillColor=#3a2c10;strokeColor=#ffd16a;fontColor=#fff0c7;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1350" y="855" width="210" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ending-inputs" value="Inputs: coverage, encryption, supplies, deadZones, scienceRoof, config flags" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3a2c10;strokeColor=#ffd16a;fontColor=#fff0c7;" vertex="1" parent="1">
+          <mxGeometry x="1335" y="735" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="show-ending" value="showEnding()&#xa;Print ending text&#xa;show replay button" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#173322;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="1365" y="1025" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="outcomes" value="Possible outcomes&#xa;A / B / C / D ending states" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#163d1d;strokeColor=#6dff9d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="1140" width="230" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="serve" value="Local Run Path&#xa;python3 -m http.server 8000&#xa;Browser opens static app" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#102818;strokeColor=#78b98d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="1510" y="180" width="250" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="verify" value="Verification Path&#xa;- node --check script.js&#xa;- curl local server&#xa;- headless Chrome DOM boot check" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#102818;strokeColor=#78b98d;fontColor=#d8ffe3;" vertex="1" parent="1">
+          <mxGeometry x="1495" y="320" width="280" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" edge="1" parent="1" source="repo" target="html" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e2" edge="1" parent="1" source="repo" target="css" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e3" edge="1" parent="1" source="repo" target="js" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e4" edge="1" parent="1" source="browser" target="boot" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e5" edge="1" parent="1" source="html" target="browser" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e6" edge="1" parent="1" source="css" target="browser" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e7" edge="1" parent="1" source="js" target="boot" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e8" edge="1" parent="1" source="boot" target="state-init" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e9" edge="1" parent="1" source="boot" target="dom-map" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e10" edge="1" parent="1" source="boot" target="render" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e11" edge="1" parent="1" source="render" target="refresh" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e12" edge="1" parent="1" source="refresh" target="stats" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e13" edge="1" parent="1" source="refresh" target="map" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e14" edge="1" parent="1" source="refresh" target="ledger" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e15" edge="1" parent="1" source="boot" target="terminal-typing" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e16" edge="1" parent="1" source="terminal-typing" target="type-line" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e17" edge="1" parent="1" source="terminal-typing" target="choices" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e18" edge="1" parent="1" source="terminal-typing" target="input" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e19" edge="1" parent="1" source="terminal-typing" target="controls" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e20" edge="1" parent="1" source="type-line" target="audio-system" style="endArrow=block;endFill=1;strokeColor=#78b98d;dashed=1;" />
+        <mxCell id="e21" edge="1" parent="1" source="choices" target="audio-system" style="endArrow=block;endFill=1;strokeColor=#78b98d;dashed=1;" />
+        <mxCell id="e22" edge="1" parent="1" source="controls" target="audio-system" style="endArrow=block;endFill=1;strokeColor=#78b98d;dashed=1;" />
+        <mxCell id="e23" edge="1" parent="1" source="boot" target="game-flow" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e24" edge="1" parent="1" source="game-flow" target="intro" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e25" edge="1" parent="1" source="intro" target="workbench" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e26" edge="1" parent="1" source="workbench" target="deployment" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e27" edge="1" parent="1" source="deployment" target="diagnostics" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e28" edge="1" parent="1" source="diagnostics" target="mutual-aid" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e29" edge="1" parent="1" source="deployment" target="locations" style="endArrow=block;endFill=1;strokeColor=#78b98d;" />
+        <mxCell id="e30" edge="1" parent="1" source="workbench" target="mutators" style="endArrow=block;endFill=1;strokeColor=#78b98d;" />
+        <mxCell id="e31" edge="1" parent="1" source="locations" target="mutators" style="endArrow=block;endFill=1;strokeColor=#78b98d;" />
+        <mxCell id="e32" edge="1" parent="1" source="diagnostics" target="mutators" style="endArrow=block;endFill=1;strokeColor=#78b98d;" />
+        <mxCell id="e33" edge="1" parent="1" source="mutual-aid" target="mutators" style="endArrow=block;endFill=1;strokeColor=#78b98d;" />
+        <mxCell id="e34" edge="1" parent="1" source="mutators" target="refresh" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e35" edge="1" parent="1" source="mutual-aid" target="ending-inputs" style="endArrow=block;endFill=1;strokeColor=#ffd16a;" />
+        <mxCell id="e36" edge="1" parent="1" source="mutators" target="ending-inputs" style="endArrow=block;endFill=1;strokeColor=#ffd16a;" />
+        <mxCell id="e37" edge="1" parent="1" source="ending-inputs" target="ending" style="endArrow=block;endFill=1;strokeColor=#ffd16a;" />
+        <mxCell id="e38" edge="1" parent="1" source="ending" target="show-ending" style="endArrow=block;endFill=1;strokeColor=#ffd16a;" />
+        <mxCell id="e39" edge="1" parent="1" source="show-ending" target="outcomes" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e40" edge="1" parent="1" source="repo" target="serve" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+        <mxCell id="e41" edge="1" parent="1" source="serve" target="verify" style="endArrow=block;endFill=1;strokeColor=#6dff9d;" />
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
