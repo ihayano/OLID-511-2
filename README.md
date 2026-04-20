@@ -43,12 +43,15 @@ Then open [http://localhost:8000](http://localhost:8000).
 |------|------|
 | `index.html` | Page structure: boot screen, top bar, status strip, terminal feed, workbench panel, deployment sidebar. |
 | `styles.css` | CRT / terminal theming, green and amber palettes, scanlines, responsive rules. |
-| `script.js` | All game state, encounter text, workbench UI, theme toggle, and ending logic. |
+| `script.js` | All game state, workbench UI, theme toggle, and ending logic. All player-facing prose is read from `content/strings.json` via `t("key")` lookups. |
+| `strings.js` | Tiny loader that fetches `content/strings.json`, exposes `window.GameStrings` with `t(key, vars)` + `format(template, vars)`, and populates static HTML labels tagged with `data-string="key"`. |
+| `content/strings.json` | Every player-visible string: boot lines, status chip labels, workbench rows, six location handlers, diagnostics, mutual aid, and all four endings. Edit this file to retune narration, labels, or dialogue without touching code. |
 | `analytics.js` | Lightweight run-log analytics: buffers structured events (run started, workbench committed, location resolved, diagnostic, run ended) in `localStorage`, exposes `window.IntermeshAnalytics`, and optionally POSTs to `INTERMESH_ANALYTICS_ENDPOINT` via `navigator.sendBeacon`. |
 | `css/`, `js/` | Vendored Bootstrap 5 (grid + bundle, minified + source maps). |
 | `rqYZNP-800.jpg` | Background / art asset. |
 | `data/game_constants.json` | Balancing data for the Python tools; kept in sync with the design intent of `script.js`. |
 | `tools/validate_constants.py` | Sanity-checks `game_constants.json` (required keys, non-negative costs, deployment coverage, ending thresholds, etc.). |
+| `tools/validate_strings.js` | Checks that every `t("...")` key in `script.js` exists in `content/strings.json` and flags any suspicious hardcoded narration literals in the helper functions. |
 | `tools/simulate_monte_carlo.py` | Monte Carlo simulator with a grid-search tuning sweep and a stratified sweep (one workbench decision forced at a time); writes reports under `reports/`. |
 | `tools/summarize_runs.py` | Aggregates exported player run logs (the JSON produced by the Download Log button or an analytics endpoint) into a markdown + JSON report that mirrors the Monte Carlo report format. |
 | `reports/monte_carlo_report.md` / `.json` | Latest simulation output: baseline ending mix and top tuning candidates. |
@@ -97,6 +100,60 @@ Outputs:
 - `reports/monte_carlo_report.json`
 
 Each run also performs a small grid search over starting budget, starting hours, and the apartments supplies bonus, scoring each combination to favor strong endings and penalize failure endings. Use the report as a balancing target — tweak one lever in `game_constants.json`, re-validate, re-simulate.
+
+## Editing game text
+
+Every player-facing string in the game — narration, prompts, choice copy, status chip labels, workbench row titles, diagnostics, mutual-aid beats, endings — lives in a single file:
+
+```
+content/strings.json
+```
+
+Open it in any text editor and change the prose. The game code does not need to be touched.
+
+### How it works
+
+- `index.html` loads `strings.js` before `script.js`.
+- On boot, `strings.js` fetches `content/strings.json`, stores it on `window.GameStrings`, and calls `applyStaticStrings()` to populate every HTML element tagged with `data-string="some.key"`.
+- `script.js` calls `t("some.key")` (or `t("some.key", { name: "Yoshiko" })` for interpolation) everywhere it needs to show text.
+- Placeholders use `{name}` style tokens inside the JSON values, substituted at runtime.
+
+### Examples
+
+Plain string:
+
+```json
+"mutual_aid": {
+  "grant_line": "Mina sends her message and returns with a bottle of wine (+1 supplies). Mutual aid becomes more than a slogan."
+}
+```
+
+String with placeholders — any `{name}` token is filled in by the calling code:
+
+```json
+"intro": {
+  "post_name": [
+    "{name} ready. Project Intermesh setup logged.",
+    "Main objective: deploy enough resilient Meshtastic nodes to keep people talking after the grid falls."
+  ]
+}
+```
+
+Multi-line blocks are JSON arrays; each entry becomes one line in the terminal feed. The available placeholders for each string are whatever the call site passes in — see `script.js` for the exact bindings (for example `build_locked` expects `{hardware}`, `{nodes}`, `{s}` for pluralization).
+
+### Validate after editing
+
+Run the validator to confirm every `t("...")` call in `script.js` still resolves and no stray hardcoded narration crept in:
+
+```powershell
+node tools/validate_strings.js
+```
+
+It will exit non-zero and print the offending line numbers if anything is missing.
+
+### Serving the JSON
+
+The loader uses `fetch("content/strings.json")`, which does **not** work over `file://`. Serve the folder over HTTP (`python -m http.server 8000`) while developing; if the strings file fails to load the page will show a visible error with the same instruction.
 
 ## Player analytics (zero-backend)
 

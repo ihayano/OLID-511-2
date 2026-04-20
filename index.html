@@ -3,61 +3,61 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Project Intermesh</title>
+    <title data-string="ui.page_title">Project Intermesh</title>
     <link rel="stylesheet" href="css/bootstrap.min.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="intermesh-app">
     <div id="boot-screen" class="boot-screen" aria-hidden="true">
       <div class="boot-screen__inner">
-        <p class="boot-screen__line">PROJECT INTERMESH DOS TERMINAL v1.0</p>
-        <p class="boot-screen__line">MEMORY CHECK 640K OK</p>
-        <p class="boot-screen__line">MESH ROUTING STACK ........ READY</p>
-        <p class="boot-screen__line">COMMUNITY NODE CONSOLE .... READY</p>
-        <p class="boot-screen__line">LOADING EMERGENCY SCENARIO...</p>
+        <p class="boot-screen__line" data-string="boot.lines.0">PROJECT INTERMESH DOS TERMINAL v1.0</p>
+        <p class="boot-screen__line" data-string="boot.lines.1">MEMORY CHECK 640K OK</p>
+        <p class="boot-screen__line" data-string="boot.lines.2">MESH ROUTING STACK ........ READY</p>
+        <p class="boot-screen__line" data-string="boot.lines.3">COMMUNITY NODE CONSOLE .... READY</p>
+        <p class="boot-screen__line" data-string="boot.lines.4">LOADING EMERGENCY SCENARIO...</p>
       </div>
     </div>
     <div class="app-frame">
       <div class="crt-shell">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Community Mesh Build Console</p>
-            <h1>PROJECT INTERMESH</h1>
+            <p class="eyebrow" data-string="ui.eyebrow">Community Mesh Build Console</p>
+            <h1 data-string="ui.title">PROJECT INTERMESH</h1>
           </div>
           <div class="topbar-actions">
-            <button id="theme-toggle" class="secondary-button btn btn-outline-light mr-2" type="button" aria-label="Toggle screen theme">Theme: GREEN</button>
-            <button id="download-log-button" class="secondary-button btn btn-outline-light mr-2" type="button" title="Download your run log as JSON">Download Log</button>
-            <button id="restart-button" class="secondary-button btn btn-outline-light" type="button">Restart Run</button>
+            <button id="theme-toggle" class="secondary-button btn btn-outline-light mr-2" type="button" data-string-attr-aria-label="ui.theme_aria" data-string="ui.theme_default_label" aria-label="Toggle screen theme">Theme: GREEN</button>
+            <button id="download-log-button" class="secondary-button btn btn-outline-light mr-2" type="button" data-string-attr-title="ui.download_log_title" data-string="ui.download_log" title="Download your run log as JSON">Download Log</button>
+            <button id="restart-button" class="secondary-button btn btn-outline-light" type="button" data-string="ui.restart">Restart Run</button>
           </div>
         </header>
 
         <section class="status-strip">
           <article class="status-chip">
-            <span class="stat-label">Budget</span>
+            <span class="stat-label" data-string="ui.chips.budget">Budget</span>
             <strong id="budget-stat">$340</strong>
           </article>
           <article class="status-chip">
-            <span class="stat-label">Coverage</span>
+            <span class="stat-label" data-string="ui.chips.coverage">Coverage</span>
             <strong id="coverage-stat">0%</strong>
           </article>
           <article class="status-chip">
-            <span class="stat-label">Encryption</span>
+            <span class="stat-label" data-string="ui.chips.encryption">Encryption</span>
             <strong id="encryption-stat">OFF</strong>
           </article>
           <article class="status-chip">
-            <span class="stat-label">Supplies</span>
+            <span class="stat-label" data-string="ui.chips.supplies">Supplies</span>
             <strong id="supplies-stat">0</strong>
           </article>
           <article class="status-chip">
-            <span class="stat-label">Hours Remaining</span>
+            <span class="stat-label" data-string="ui.chips.hours">Hours Remaining</span>
             <strong id="hours-stat">84H</strong>
           </article>
           <article class="status-chip status-chip--wide">
-            <span class="stat-label">Hardware</span>
+            <span class="stat-label" data-string="ui.chips.hardware">Hardware</span>
             <strong id="hardware-stat">Not selected</strong>
           </article>
           <article class="status-chip status-chip--wide">
-            <span class="stat-label">Nodes Used / Purchased</span>
+            <span class="stat-label" data-string="ui.chips.nodes">Nodes Used / Purchased</span>
             <strong id="nodes-stat">0 / 0</strong>
           </article>
         </section>
@@ -65,14 +65,14 @@
         <main class="screen-layout">
           <section class="screen-main">
             <div class="screen-head">
-              <span>Terminal Feed</span>
-              <span id="builder-badge">Builder: UNASSIGNED // T-84H</span>
+              <span data-string="ui.terminal_feed">Terminal Feed</span>
+              <span id="builder-badge" data-string="ui.builder_badge_default">Builder: UNASSIGNED // T-84H</span>
             </div>
 
             <div id="terminal" class="terminal" aria-live="polite"></div>
 
             <div id="input-zone" class="input-zone hidden">
-              <label id="input-label" for="builder-input">Input</label>
+              <label id="input-label" for="builder-input" data-string="ui.input_label_default">Input</label>
               <div class="input-row">
                 <input
                   id="builder-input"
@@ -82,23 +82,24 @@
                   maxlength="24"
                   autocomplete="off"
                   spellcheck="false"
+                  data-string-attr-placeholder="ui.input_placeholder_default"
                   placeholder="Enter your name"
                 />
-                <button id="input-submit" class="btn btn-primary" type="button">Transmit</button>
+                <button id="input-submit" class="btn btn-primary" type="button" data-string="ui.input_submit">Transmit</button>
               </div>
             </div>
 
             <div id="workbench-panel" class="workbench-panel hidden" aria-hidden="true">
               <div class="workbench-head">
-                <h2 class="workbench-title">Workbench Planning</h2>
+                <h2 class="workbench-title" data-string="ui.workbench_title">Workbench Planning</h2>
                 <p id="workbench-budget-hint" class="workbench-hint"></p>
               </div>
               <div id="workbench-sections"></div>
               <div class="workbench-footer">
                 <p id="workbench-total-line" class="workbench-total"></p>
                 <button id="workbench-confirm" type="button" class="choice-card workbench-confirm btn btn-primary btn-lg btn-block" disabled>
-                  <strong>Commit Resources</strong>
-                  <span>Lock this loadout and begin deployment.</span>
+                  <strong data-string="ui.commit_primary">Commit Resources</strong>
+                  <span data-string="ui.commit_subtitle">Lock this loadout and begin deployment.</span>
                 </button>
               </div>
             </div>
@@ -111,13 +112,14 @@
     </div>
 
     <noscript>
-      <div class="noscript-warning">
+      <div class="noscript-warning" data-string="ui.noscript">
         JavaScript is required to boot the Project Intermesh terminal.
       </div>
     </noscript>
 
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="analytics.js"></script>
+    <script src="strings.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
