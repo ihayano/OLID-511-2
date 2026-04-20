@@ -610,29 +610,16 @@ function workbenchAddRow(container, title, options, onPick, selectedValue) {
 
 function syncWorkbenchFooter(draft, budgetStart) {
   const total = workbenchCartTotal(draft);
-  const allSet = Boolean(
-    draft.hardware &&
-      draft.nodes != null &&
-      draft.cases != null &&
-      draft.solar != null &&
-      draft.catCarrier != null &&
-      draft.firmware
-  );
+  const required = Boolean(draft.hardware && draft.nodes != null && draft.firmware);
   const over = total > budgetStart;
-  if (allSet && !over) {
+  if (required && !over) {
     dom.workbenchTotalLine.textContent = `Cart total: $${total} // Cash left after checkout: $${budgetStart - total}`;
-  } else if (over && allSet) {
+  } else if (over && required) {
     dom.workbenchTotalLine.textContent = `Cart total: $${total} -- over budget by $${total - budgetStart}. Adjust selections.`;
   } else {
-    dom.workbenchTotalLine.textContent = `Cart so far: $${total} // Finish every category to lock in budget.`;
+    dom.workbenchTotalLine.textContent = `Cart so far: $${total} // Pick hardware, node count, and firmware to lock in budget.`;
   }
-  dom.workbenchConfirm.disabled = !allSet || over;
-}
-
-function countMeta(count, unitCost, siteLabel) {
-  if (count === 0) return "Cost: $0";
-  if (count === 1) return `Cost: $${unitCost} // covers one of ${siteLabel}`;
-  return `Cost: $${unitCost * count} // covers both ${siteLabel}`;
+  dom.workbenchConfirm.disabled = !required || over;
 }
 
 function renderWorkbenchCheckout(draft, budgetStart) {
@@ -640,33 +627,27 @@ function renderWorkbenchCheckout(draft, budgetStart) {
   dom.workbenchSections.replaceChildren();
   const maxN = workbenchMaxNodes(draft, budgetStart);
 
+  const rerender = () => {
+    renderWorkbenchCheckout(draft, budgetStart);
+    syncWorkbenchFooter(draft, budgetStart);
+  };
+
+  const toggle = (field, value) => {
+    draft[field] = draft[field] === value ? null : value;
+    rerender();
+  };
+
   workbenchAddRow(
     dom.workbenchSections,
-    "1) Hardware (sets price per node)",
+    "1) Hardware",
     [
-      {
-        value: "heltec",
-        label: "Heltec V3",
-        description: "Cheap and common. Less forgiving if you make mistakes.",
-        meta: "Per node: $30",
-      },
-      {
-        value: "tbeam",
-        label: "LilyGO T-Beam",
-        description: "GPS-equipped all-rounder. Middle of the pack on cost and reach.",
-        meta: "Per node: $40",
-      },
-      {
-        value: "rak",
-        label: "RAK WisBlock",
-        description: "Better radios and power draw; every node costs more.",
-        meta: "Per node: $50 // +1 link quality",
-      },
+      { value: "heltec", label: "Heltec V3", description: "", meta: "$30 per node" },
+      { value: "tbeam", label: "LilyGO T-Beam", description: "", meta: "$40 per node" },
+      { value: "rak", label: "RAK WisBlock", description: "", meta: "$50 per node" },
     ],
     (value) => {
       draft.hardware = value;
-      renderWorkbenchCheckout(draft, budgetStart);
-      syncWorkbenchFooter(draft, budgetStart);
+      rerender();
     },
     draft.hardware
   );
@@ -675,111 +656,59 @@ function renderWorkbenchCheckout(draft, budgetStart) {
   for (let n = 1; n <= 6; n += 1) {
     const nc = getNodeCostForHardware(draft.hardware);
     const nodeLineCost = n * nc;
-    const withExtras = nodeLineCost + getAddOnCost(draft) + workbenchFirmwareCost(draft.firmware);
     nodeOptions.push({
       value: n,
       label: `${n} node${n === 1 ? "" : "s"}`,
-      description: nc ? `Subtotal ${n} × $${nc} = $${nodeLineCost}` : "Pick hardware first.",
-      meta: !draft.hardware ? "Locked" : withExtras > budgetStart ? "Over budget with current add-ons/firmware" : "Within budget",
+      description: "",
+      meta: nc ? `$${nodeLineCost}` : "",
       disabled: !draft.hardware || n > maxN,
     });
   }
   workbenchAddRow(
     dom.workbenchSections,
-    "2) How many nodes to buy (max 6 sites)",
+    "2) How many nodes to buy (max 6)",
     nodeOptions,
     (value) => {
       draft.nodes = value;
-      renderWorkbenchCheckout(draft, budgetStart);
-      syncWorkbenchFooter(draft, budgetStart);
+      rerender();
     },
     draft.nodes
   );
 
   workbenchAddRow(
     dom.workbenchSections,
-    "3) Weatherproof cases",
+    "3) Weatherproof cases (optional)",
     [
-      {
-        value: 0,
-        label: "0 cases",
-        description: "Skip weatherproofing.",
-        meta: countMeta(0, CASE_UNIT_COST, ""),
-      },
-      {
-        value: 1,
-        label: "1 case",
-        description: "Protects one outdoor install (roof OR tower).",
-        meta: countMeta(1, CASE_UNIT_COST, "science roof or radio tower"),
-      },
-      {
-        value: 2,
-        label: "2 cases",
-        description: "Enough outdoor protection for science roof AND radio tower.",
-        meta: countMeta(2, CASE_UNIT_COST, "science roof and radio tower"),
-      },
+      { value: 1, label: "1 case", description: "", meta: `$${CASE_UNIT_COST}` },
+      { value: 2, label: "2 cases", description: "", meta: `$${CASE_UNIT_COST * 2}` },
     ],
-    (value) => {
-      draft.cases = value;
-      renderWorkbenchCheckout(draft, budgetStart);
-      syncWorkbenchFooter(draft, budgetStart);
-    },
+    (value) => toggle("cases", value),
     draft.cases
   );
 
   workbenchAddRow(
     dom.workbenchSections,
-    "4) Solar panels",
+    "4) Solar panels (optional)",
     [
-      {
-        value: 0,
-        label: "0 panels",
-        description: "Skip solar.",
-        meta: countMeta(0, SOLAR_UNIT_COST, ""),
-      },
-      {
-        value: 1,
-        label: "1 panel",
-        description: "Powers one outdoor install (roof OR tower).",
-        meta: countMeta(1, SOLAR_UNIT_COST, "science roof or radio tower"),
-      },
-      {
-        value: 2,
-        label: "2 panels",
-        description: "Powers both science roof AND radio tower.",
-        meta: countMeta(2, SOLAR_UNIT_COST, "science roof and radio tower"),
-      },
+      { value: 1, label: "1 panel", description: "", meta: `$${SOLAR_UNIT_COST}` },
+      { value: 2, label: "2 panels", description: "", meta: `$${SOLAR_UNIT_COST * 2}` },
     ],
-    (value) => {
-      draft.solar = value;
-      renderWorkbenchCheckout(draft, budgetStart);
-      syncWorkbenchFooter(draft, budgetStart);
-    },
+    (value) => toggle("solar", value),
     draft.solar
   );
 
   workbenchAddRow(
     dom.workbenchSections,
-    "5) Portable cat carrier",
+    "5) Portable cat carrier (optional)",
     [
       {
-        value: "no",
-        label: "No carrier",
-        description: "Leave the neighborhood cat fund off your cart.",
-        meta: "Cost: $0",
-      },
-      {
         value: "yes",
-        label: "Buy portable cat carrier",
-        description: "Keep the neighborhood evacuation kit stocked.",
-        meta: `Cost: $${CAT_CARRIER_COST}`,
+        label: "Portable cat carrier",
+        description: "",
+        meta: `$${CAT_CARRIER_COST}`,
       },
     ],
-    (value) => {
-      draft.catCarrier = value;
-      renderWorkbenchCheckout(draft, budgetStart);
-      syncWorkbenchFooter(draft, budgetStart);
-    },
+    (value) => toggle("catCarrier", value),
     draft.catCarrier
   );
 
@@ -787,23 +716,12 @@ function renderWorkbenchCheckout(draft, budgetStart) {
     dom.workbenchSections,
     "6) Firmware",
     [
-      {
-        value: "stable",
-        label: "Stable mesh firmware",
-        description: "Trusted build for storm prep.",
-        meta: "Cost: $10",
-      },
-      {
-        value: "alpha",
-        label: "Alpha nightly",
-        description: "Experimental; battery and routing risk.",
-        meta: "Cost: $0",
-      },
+      { value: "stable", label: "Stable firmware", description: "", meta: "$10" },
+      { value: "alpha", label: "Alpha firmware", description: "", meta: "$0" },
     ],
     (value) => {
       draft.firmware = value;
-      renderWorkbenchCheckout(draft, budgetStart);
-      syncWorkbenchFooter(draft, budgetStart);
+      rerender();
     },
     draft.firmware
   );
@@ -825,8 +743,8 @@ function applyWorkbenchSelections(selections) {
   state.nodesPurchased = selections.nodes;
   state.nodesAvailable = selections.nodes;
 
-  state.weatherproofCases = selections.cases;
-  state.solarPanels = selections.solar;
+  state.weatherproofCases = selections.cases || 0;
+  state.solarPanels = selections.solar || 0;
   state.catCarrier = selections.catCarrier === "yes";
 
   if (selections.firmware === "stable") {
@@ -849,7 +767,7 @@ function applyWorkbenchSelections(selections) {
 
 function runWorkbenchCheckout() {
   const budgetStart = state.budget;
-  dom.workbenchBudgetHint.textContent = `Starting cash: $${budgetStart}. Choose one option in every section. The cart total includes nodes, add-ons, and paid firmware.`;
+  dom.workbenchBudgetHint.textContent = `Starting cash: $${budgetStart}. Hardware, node count, and firmware are required. Everything else is optional -- tap twice to clear a selection.`;
   dom.workbenchPanel.classList.remove("hidden");
   dom.workbenchPanel.setAttribute("aria-hidden", "false");
 
@@ -893,17 +811,19 @@ async function actWorkbench(runToken) {
     window.IntermeshAnalytics.workbenchCommitted(selections, budgetBefore - state.budget, state.budget);
   }
 
-  const caseLabel = `${selections.cases} weatherproof case${selections.cases === 1 ? "" : "s"}`;
-  const solarLabel = `${selections.solar} solar panel${selections.solar === 1 ? "" : "s"}`;
-  const carrierLabel = selections.catCarrier === "yes" ? "portable cat carrier packed" : "no cat carrier";
+  const cases = selections.cases || 0;
+  const solar = selections.solar || 0;
+  const extras = [];
+  if (cases > 0) extras.push(`${cases} weatherproof case${cases === 1 ? "" : "s"}`);
+  if (solar > 0) extras.push(`${solar} solar panel${solar === 1 ? "" : "s"}`);
+  if (selections.catCarrier === "yes") extras.push("portable cat carrier");
+  const extrasLine = extras.length ? `Extras: ${extras.join(", ")}.` : "Extras: none.";
 
   await typeBlock(
     [
       `Build locked: ${state.hardware}, ${selections.nodes} node${selections.nodes === 1 ? "" : "s"}.`,
-      `Add-ons: ${caseLabel}, ${solarLabel}, ${carrierLabel}.`,
-      selections.firmware === "stable"
-        ? "Stable firmware flashed ($10)."
-        : "Alpha firmware flashed -- watch battery and routing.",
+      extrasLine,
+      selections.firmware === "stable" ? "Firmware: stable." : "Firmware: alpha.",
       `Cash after checkout: $${state.budget}.`,
     ],
     "success",
