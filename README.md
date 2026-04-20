@@ -45,11 +45,13 @@ Then open [http://localhost:8000](http://localhost:8000).
 | `index.html` | Page structure: boot screen, top bar, status strip, terminal feed, workbench panel, deployment sidebar. |
 | `styles.css` | CRT / terminal theming, green and amber palettes, scanlines, responsive rules. |
 | `script.js` | All game state, encounter text, workbench UI, hotkeys, theme toggle, and ending logic. |
+| `analytics.js` | Lightweight run-log analytics: buffers structured events (run started, workbench committed, location resolved, diagnostic, run ended) in `localStorage`, exposes `window.IntermeshAnalytics`, and optionally POSTs to `INTERMESH_ANALYTICS_ENDPOINT` via `navigator.sendBeacon`. |
 | `css/`, `js/` | Vendored Bootstrap 5 (grid + bundle, minified + source maps). |
 | `rqYZNP-800.jpg` | Background / art asset. |
 | `data/game_constants.json` | Balancing data for the Python tools; kept in sync with the design intent of `script.js`. |
 | `tools/validate_constants.py` | Sanity-checks `game_constants.json` (required keys, non-negative costs, deployment coverage, ending thresholds, etc.). |
 | `tools/simulate_monte_carlo.py` | Monte Carlo simulator plus a small grid sweep; writes reports under `reports/`. |
+| `tools/summarize_runs.py` | Aggregates exported player run logs (the JSON produced by the Download Log button or an analytics endpoint) into a markdown + JSON report that mirrors the Monte Carlo report format. |
 | `reports/monte_carlo_report.md` / `.json` | Latest simulation output: baseline ending mix and top tuning candidates. |
 
 ## Starting values
@@ -85,6 +87,31 @@ Outputs:
 - `reports/monte_carlo_report.json`
 
 Each run also performs a small grid search over starting budget, starting hours, and the apartments supplies bonus, scoring each combination to favor strong endings and penalize failure endings. Use the report as a balancing target — tweak one lever in `game_constants.json`, re-validate, re-simulate.
+
+## Player analytics (zero-backend)
+
+`analytics.js` captures a structured log of every run directly in the browser. Nothing leaves the machine by default.
+
+- **Stored events per run:** `run_started`, `workbench_committed`, `location_resolved` (one per deployment site), `diagnostic_triggered`, `mutual_aid_resolved`, `run_ended` (with coverage, budget, supplies, hours, ending letter, and every workbench selection).
+- **Persistence:** the last 50 runs are kept in `localStorage` under `project-intermesh-runs`.
+- **Download Log** button in the top bar exports all buffered runs as a single JSON file (`intermesh-runs-<timestamp>.json`). Ideal for class submissions.
+- **Optional cohort tag** via `?cohort=spring26` in the URL, or `window.INTERMESH_COHORT = "..."` before `analytics.js` loads.
+- **Optional endpoint:** set `window.INTERMESH_ANALYTICS_ENDPOINT = "https://..."` before `analytics.js` loads and every finished run (plus in-progress runs on page unload) will be POSTed via `navigator.sendBeacon`.
+
+### Summarize player runs with Python
+
+Point `tools/summarize_runs.py` at one or more exported JSON files (or a directory of them):
+
+```powershell
+python tools/summarize_runs.py path/to/intermesh-runs-*.json
+```
+
+Outputs:
+
+- `reports/player_runs_report.md`
+- `reports/player_runs_report.json`
+
+The markdown report uses the same layout as the Monte Carlo report (ending rates, averages, workbench choice frequencies, per-location outcomes, diagnostics), so simulated and real results are easy to diff. Persistent gaps between the two are a signal to re-weight the choice priors in `tools/simulate_monte_carlo.py`.
 
 ## License
 

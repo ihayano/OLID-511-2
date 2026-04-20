@@ -76,6 +76,7 @@ const dom = {
   workbenchTotalLine: document.getElementById("workbench-total-line"),
   workbenchConfirm: document.getElementById("workbench-confirm"),
   themeToggle: document.getElementById("theme-toggle"),
+  downloadLogButton: document.getElementById("download-log-button"),
   bootScreen: document.getElementById("boot-screen"),
 };
 
@@ -963,7 +964,11 @@ async function actWorkbench(runToken) {
   );
 
   const selections = await runWorkbenchCheckout();
+  const budgetBefore = state.budget;
   applyWorkbenchSelections(selections);
+  if (window.IntermeshAnalytics) {
+    window.IntermeshAnalytics.workbenchCommitted(selections, budgetBefore - state.budget, state.budget);
+  }
 
   const addOnLabel =
     selections.addOn === "both"
@@ -1420,9 +1425,33 @@ async function actDeployment(runToken) {
       break;
     }
 
+    const before = {
+      budget: state.budget,
+      coverage: state.coverage,
+      supplies: state.supplies,
+      hours: state.hoursRemaining,
+      nodesDeployed: state.nodesDeployed.length,
+    };
     await applyTravelIfNeeded(selected, runToken);
+    const travelBudgetDelta = state.budget - before.budget;
+    const travelHoursDelta = before.hours - state.hoursRemaining;
+
     const handler = handlers[selected];
     await handler(runToken);
+
+    if (window.IntermeshAnalytics) {
+      const status = state.locationStatuses[selected];
+      window.IntermeshAnalytics.locationResolved(selected, {
+        outcome: status ? status.status : "unknown",
+        coverage_delta: state.coverage - before.coverage,
+        supplies_delta: state.supplies - before.supplies,
+        budget_delta: state.budget - before.budget,
+        hours_delta: before.hours - state.hoursRemaining,
+        travel_budget_delta: travelBudgetDelta,
+        travel_hours_delta: travelHoursDelta,
+        node_consumed: state.nodesDeployed.length > before.nodesDeployed,
+      });
+    }
   }
 }
 
@@ -1481,11 +1510,20 @@ async function actDiagnostics(runToken) {
         setLocation("health", "deployed", "Emergency field fix restored clinic routing.");
       }
       await typeLine(`You burn $40 on a last-minute rescue and claw back +${gain}% coverage before the rain starts.`, "success", runToken);
+      if (window.IntermeshAnalytics) {
+        window.IntermeshAnalytics.diagnosticTriggered({ issues, patched: true, coverage_delta: gain, budget_delta: -40 });
+      }
     } else {
       await typeLine("You keep the cash. The dead zones stay exactly where the map warned they would.", "warn", runToken);
+      if (window.IntermeshAnalytics) {
+        window.IntermeshAnalytics.diagnosticTriggered({ issues, patched: false, coverage_delta: 0, budget_delta: 0 });
+      }
     }
   } else {
     await typeLine("Ping sweep returns green across every deployed corridor. No dead zones detected.", "success", runToken);
+    if (window.IntermeshAnalytics) {
+      window.IntermeshAnalytics.diagnosticTriggered({ issues: [], patched: false, coverage_delta: 0, budget_delta: 0 });
+    }
   }
 
   if (!state.validBand) {
@@ -1616,6 +1654,31 @@ function determineEnding() {
 async function showEnding(runToken) {
   clearTerminal();
   const ending = determineEnding();
+
+  if (window.IntermeshAnalytics) {
+    const letterMatch = (ending.lines[0] || "").match(/ENDING\s+([A-D])/i);
+    window.IntermeshAnalytics.runEnded({
+      ending: letterMatch ? letterMatch[1].toUpperCase() : "unknown",
+      coverage: state.coverage,
+      budget_left: state.budget,
+      hours_left: state.hoursRemaining,
+      supplies: state.supplies,
+      encryption: state.encryption,
+      security_configured: state.securityConfigured,
+      hardware: state.hardware,
+      nodes_purchased: state.nodesPurchased,
+      nodes_used: state.nodesDeployed.length,
+      valid_band: state.validBand,
+      valid_preset: state.validPreset,
+      stable_firmware: state.stableFirmware,
+      dead_zones: state.deadZones,
+      science_roof: state.scienceRoof,
+      science_missed: state.scienceMissed,
+      solar_support: state.solarSupport,
+      battery_fragile: state.batteryFragile,
+    });
+  }
+
   await typeBlock(ending.lines, ending.className, runToken);
   await typeLine(
     `Final stats // Budget: $${state.budget} // Coverage: ${state.coverage}% // Encryption: ${state.encryption ? "ON" : "OFF"} // Supplies: ${state.supplies}`,
@@ -1659,6 +1722,21 @@ function resetState() {
   refreshUi();
 }
 
+function downloadRunLog() {
+  if (!window.IntermeshAnalytics) return;
+  const payload = window.IntermeshAnalytics.exportRunsAsJson();
+  const blob = new Blob([payload], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `intermesh-runs-${stamp}.json`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function bindControls() {
   dom.restartButton.addEventListener("click", () => {
     startGame();
@@ -1667,6 +1745,12 @@ function bindControls() {
   dom.themeToggle.addEventListener("click", () => {
     toggleTheme();
   });
+
+  if (dom.downloadLogButton) {
+    dom.downloadLogButton.addEventListener("click", () => {
+      downloadRunLog();
+    });
+  }
 
   dom.mapPrev.addEventListener("click", () => {
   });
@@ -1709,6 +1793,13 @@ async function startGame() {
   currentRunToken += 1;
   const runToken = currentRunToken;
   resetState();
+  if (window.IntermeshAnalytics) {
+    window.IntermeshAnalytics.runStarted({
+      starting_budget: state.budget,
+      starting_hours: state.hoursRemaining,
+      theme: document.body.dataset.theme || "green",
+    });
+  }
   await playBootSequence(runToken);
 
   await runGame(runToken);
