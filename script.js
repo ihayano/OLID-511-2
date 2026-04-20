@@ -85,11 +85,9 @@ const pauseBetweenLines = 220;
 const bootLineRevealDelay = 420;
 const bootExitDelay = 1100;
 const themeStorageKey = "project-intermesh-theme";
-const hotkeyLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 let currentRunToken = 0;
 let currentMapIndex = 0;
 let activeCursorRow = null;
-let activeHotkeys = new Map();
 
 function createInitialState() {
   const locationStatuses = {};
@@ -152,29 +150,7 @@ function setActiveCursor(row) {
 }
 
 function clearChoices() {
-  clearActiveHotkeys();
   dom.choicePanel.innerHTML = "";
-}
-
-function clearActiveHotkeys() {
-  activeHotkeys.forEach((button) => {
-    button.classList.remove("is-hotkey-focus");
-  });
-  activeHotkeys = new Map();
-}
-
-function assignHotkey(button, index) {
-  const hotkey = hotkeyLetters[index];
-  if (!hotkey) {
-    button.dataset.hotkey = "";
-    return;
-  }
-
-  button.dataset.hotkey = `[${hotkey}]`;
-
-  if (!button.disabled) {
-    activeHotkeys.set(hotkey.toLowerCase(), button);
-  }
 }
 
 function bindButtonChoice(button, onPick) {
@@ -183,7 +159,6 @@ function bindButtonChoice(button, onPick) {
       return;
     }
 
-    clearActiveHotkeys();
     hideInput();
     onPick();
   });
@@ -459,7 +434,7 @@ async function applyTravelIfNeeded(locationKey, runToken) {
   return true;
 }
 
-function createChoiceButton(option, resolve, index) {
+function createChoiceButton(option, resolve) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "choice-card";
@@ -479,7 +454,6 @@ function createChoiceButton(option, resolve, index) {
     }
   }
 
-  assignHotkey(button, index);
   bindButtonChoice(button, () => resolve(option.value));
 
   dom.choicePanel.appendChild(button);
@@ -490,7 +464,7 @@ async function promptChoice(promptLines, options) {
 
   return new Promise((resolve) => {
     clearChoices();
-    options.forEach((option, index) => createChoiceButton(option, resolve, index));
+    options.forEach((option) => createChoiceButton(option, resolve));
   });
 }
 
@@ -592,7 +566,6 @@ function clampWorkbenchNodes(draft, budgetStart) {
 }
 
 function closeWorkbenchPanel() {
-  clearActiveHotkeys();
   dom.workbenchPanel.classList.add("hidden");
   dom.workbenchPanel.setAttribute("aria-hidden", "true");
   dom.workbenchSections.replaceChildren();
@@ -600,7 +573,7 @@ function closeWorkbenchPanel() {
   dom.workbenchConfirm.onclick = null;
 }
 
-function workbenchAddRow(container, title, options, onPick, selectedValue, hotkeyOffset) {
+function workbenchAddRow(container, title, options, onPick, selectedValue) {
   const section = document.createElement("div");
   section.className = "workbench-section";
   const h = document.createElement("h3");
@@ -610,7 +583,7 @@ function workbenchAddRow(container, title, options, onPick, selectedValue, hotke
   const row = document.createElement("div");
   row.className = "workbench-row";
 
-  options.forEach((opt, index) => {
+  options.forEach((opt) => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "choice-card workbench-option";
@@ -620,14 +593,12 @@ function workbenchAddRow(container, title, options, onPick, selectedValue, hotke
     if (selectedValue === opt.value) {
       btn.classList.add("workbench-selected");
     }
-    assignHotkey(btn, hotkeyOffset + index);
     bindButtonChoice(btn, () => onPick(opt.value));
     row.appendChild(btn);
   });
 
   section.appendChild(row);
   container.appendChild(section);
-  return hotkeyOffset + options.length;
 }
 
 function syncWorkbenchFooter(draft, budgetStart) {
@@ -653,13 +624,11 @@ function syncWorkbenchFooter(draft, budgetStart) {
 }
 
 function renderWorkbenchCheckout(draft, budgetStart) {
-  clearActiveHotkeys();
   clampWorkbenchNodes(draft, budgetStart);
   dom.workbenchSections.replaceChildren();
   const maxN = workbenchMaxNodes(draft, budgetStart);
-  let hotkeyIndex = 0;
 
-  hotkeyIndex = workbenchAddRow(
+  workbenchAddRow(
     dom.workbenchSections,
     "1) Hardware (sets price per node)",
     [
@@ -681,8 +650,7 @@ function renderWorkbenchCheckout(draft, budgetStart) {
       renderWorkbenchCheckout(draft, budgetStart);
       syncWorkbenchFooter(draft, budgetStart);
     },
-    draft.hardware,
-    hotkeyIndex
+    draft.hardware
   );
 
   const nodeOptions = [];
@@ -698,7 +666,7 @@ function renderWorkbenchCheckout(draft, budgetStart) {
       disabled: !draft.hardware || n > maxN,
     });
   }
-  hotkeyIndex = workbenchAddRow(
+  workbenchAddRow(
     dom.workbenchSections,
     "2) How many nodes to buy (max 6 sites)",
     nodeOptions,
@@ -707,11 +675,10 @@ function renderWorkbenchCheckout(draft, budgetStart) {
       renderWorkbenchCheckout(draft, budgetStart);
       syncWorkbenchFooter(draft, budgetStart);
     },
-    draft.nodes,
-    hotkeyIndex
+    draft.nodes
   );
 
-  hotkeyIndex = workbenchAddRow(
+  workbenchAddRow(
     dom.workbenchSections,
     "3) Add-ons (need both for science roof + radio tower)",
     [
@@ -745,11 +712,10 @@ function renderWorkbenchCheckout(draft, budgetStart) {
       renderWorkbenchCheckout(draft, budgetStart);
       syncWorkbenchFooter(draft, budgetStart);
     },
-    draft.addOn,
-    hotkeyIndex
+    draft.addOn
   );
 
-  hotkeyIndex = workbenchAddRow(
+  workbenchAddRow(
     dom.workbenchSections,
     "4) Firmware",
     [
@@ -771,11 +737,10 @@ function renderWorkbenchCheckout(draft, budgetStart) {
       renderWorkbenchCheckout(draft, budgetStart);
       syncWorkbenchFooter(draft, budgetStart);
     },
-    draft.firmware,
-    hotkeyIndex
+    draft.firmware
   );
 
-  hotkeyIndex = workbenchAddRow(
+  workbenchAddRow(
     dom.workbenchSections,
     "5) Frequency plan",
     [
@@ -803,11 +768,10 @@ function renderWorkbenchCheckout(draft, budgetStart) {
       renderWorkbenchCheckout(draft, budgetStart);
       syncWorkbenchFooter(draft, budgetStart);
     },
-    draft.frequency,
-    hotkeyIndex
+    draft.frequency
   );
 
-  hotkeyIndex = workbenchAddRow(
+  workbenchAddRow(
     dom.workbenchSections,
     "6) Mesh preset",
     [
@@ -835,8 +799,7 @@ function renderWorkbenchCheckout(draft, budgetStart) {
       renderWorkbenchCheckout(draft, budgetStart);
       syncWorkbenchFooter(draft, budgetStart);
     },
-    draft.preset,
-    hotkeyIndex
+    draft.preset
   );
 
   workbenchAddRow(
@@ -861,8 +824,7 @@ function renderWorkbenchCheckout(draft, budgetStart) {
       renderWorkbenchCheckout(draft, budgetStart);
       syncWorkbenchFooter(draft, budgetStart);
     },
-    draft.security,
-    hotkeyIndex
+    draft.security
   );
 }
 
@@ -942,7 +904,6 @@ function runWorkbenchCheckout() {
     renderWorkbenchCheckout(draft, budgetStart);
     syncWorkbenchFooter(draft, budgetStart);
 
-    dom.workbenchConfirm.dataset.hotkey = "[ENTER]";
     dom.workbenchConfirm.onclick = () => {
       if (dom.workbenchConfirm.disabled) return;
       closeWorkbenchPanel();
@@ -1713,7 +1674,6 @@ async function runGame(runToken) {
 function resetState() {
   state = createInitialState();
   currentMapIndex = 0;
-  clearActiveHotkeys();
   setActiveCursor(null);
   dom.terminal.innerHTML = "";
   clearChoices();
@@ -1774,18 +1734,7 @@ function bindControls() {
 
     if (event.key === "Enter" && !dom.workbenchConfirm.disabled && !dom.workbenchPanel.classList.contains("hidden")) {
       dom.workbenchConfirm.click();
-      return;
     }
-
-    const hotkeyTarget = activeHotkeys.get(event.key.toLowerCase());
-    if (!hotkeyTarget) {
-      return;
-    }
-
-    event.preventDefault();
-    hotkeyTarget.classList.add("is-hotkey-focus");
-    window.setTimeout(() => hotkeyTarget.classList.remove("is-hotkey-focus"), 120);
-    hotkeyTarget.click();
   });
 }
 

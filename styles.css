@@ -387,7 +387,7 @@ input.form-control:focus {
 .choice-card {
   position: relative;
   width: 100%;
-  padding: 10px 12px 10px 34px;
+  padding: 10px 12px;
   text-align: left;
   border: 1px solid var(--border);
   border-radius: 0;
@@ -396,17 +396,8 @@ input.form-control:focus {
   transition: background 120ms ease, border-color 120ms ease;
 }
 
-.choice-card::before {
-  content: attr(data-hotkey);
-  position: absolute;
-  left: 10px;
-  top: 10px;
-  color: var(--warn);
-}
-
 .choice-card:hover,
-.choice-card:focus-visible,
-.choice-card.is-hotkey-focus {
+.choice-card:focus-visible {
   background: #102410;
   border-color: var(--text);
   color: var(--text-bright);
@@ -438,10 +429,6 @@ input.form-control:focus {
 .choice-card:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-}
-
-.choice-card:disabled::before {
-  color: var(--text-dim);
 }
 
 .workbench-option.workbench-selected {

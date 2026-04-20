@@ -34,7 +34,6 @@ Then open [http://localhost:8000](http://localhost:8000).
 
 - **Retro DOS terminal** aesthetic: boot-up splash (`PROJECT INTERMESH DOS TERMINAL v1.0`), VT323 typography, scanline overlay, CRT-style panels.
 - **Two screen themes** toggled from the top bar: **GREEN** (default) and **AMBER**; the choice persists across runs via `localStorage`.
-- **Keyboard hotkeys:** every choice row is labeled A / B / C / … and can be triggered from the keyboard.
 - **Deployment sidebar:** one location card visible at a time with previous / next arrows, plus a live ledger of deployed nodes.
 - **Responsive layout** that collapses cleanly on narrower screens.
 
@@ -44,7 +43,7 @@ Then open [http://localhost:8000](http://localhost:8000).
 |------|------|
 | `index.html` | Page structure: boot screen, top bar, status strip, terminal feed, workbench panel, deployment sidebar. |
 | `styles.css` | CRT / terminal theming, green and amber palettes, scanlines, responsive rules. |
-| `script.js` | All game state, encounter text, workbench UI, hotkeys, theme toggle, and ending logic. |
+| `script.js` | All game state, encounter text, workbench UI, theme toggle, and ending logic. |
 | `analytics.js` | Lightweight run-log analytics: buffers structured events (run started, workbench committed, location resolved, diagnostic, run ended) in `localStorage`, exposes `window.IntermeshAnalytics`, and optionally POSTs to `INTERMESH_ANALYTICS_ENDPOINT` via `navigator.sendBeacon`. |
 | `css/`, `js/` | Vendored Bootstrap 5 (grid + bundle, minified + source maps). |
 | `rqYZNP-800.jpg` | Background / art asset. |
