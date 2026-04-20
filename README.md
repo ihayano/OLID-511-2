@@ -49,7 +49,7 @@ Then open [http://localhost:8000](http://localhost:8000).
 | `rqYZNP-800.jpg` | Background / art asset. |
 | `data/game_constants.json` | Balancing data for the Python tools; kept in sync with the design intent of `script.js`. |
 | `tools/validate_constants.py` | Sanity-checks `game_constants.json` (required keys, non-negative costs, deployment coverage, ending thresholds, etc.). |
-| `tools/simulate_monte_carlo.py` | Monte Carlo simulator plus a small grid sweep; writes reports under `reports/`. |
+| `tools/simulate_monte_carlo.py` | Monte Carlo simulator with a grid-search tuning sweep and a stratified sweep (one workbench decision forced at a time); writes reports under `reports/`. |
 | `tools/summarize_runs.py` | Aggregates exported player run logs (the JSON produced by the Download Log button or an analytics endpoint) into a markdown + JSON report that mirrors the Monte Carlo report format. |
 | `reports/monte_carlo_report.md` / `.json` | Latest simulation output: baseline ending mix and top tuning candidates. |
 
@@ -81,6 +81,14 @@ Run a Monte Carlo sweep (example: 10,000 runs):
 
 ```powershell
 python tools/simulate_monte_carlo.py --runs 10000 --seed 42
+```
+
+By default the simulator also runs a **stratified sweep**: for each workbench decision (hardware, firmware, frequency plan, preset, security, add-ons) it forces each value in turn and runs another 2,000 sims per value with the remaining choices still randomized. The per-stratum ending rates and averages are appended to the markdown report and the JSON output under a `strata` key, making the marginal impact of each decision easy to inspect.
+
+```powershell
+# Smaller / faster run, or turn strata off entirely
+python tools/simulate_monte_carlo.py --runs 2000 --strata-runs 500
+python tools/simulate_monte_carlo.py --runs 10000 --no-strata
 ```
 
 Outputs:

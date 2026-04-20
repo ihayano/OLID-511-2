@@ -68,7 +68,14 @@ def determine_ending(state: RunState, thresholds: dict) -> str:
     return "B"
 
 
-def simulate_one(constants: dict, rng: random.Random) -> dict:
+def _pick(rng: random.Random, options: list[str], override: str | None) -> str:
+    if override is not None and override in options:
+        return override
+    return rng.choice(options)
+
+
+def simulate_one(constants: dict, rng: random.Random, overrides: dict | None = None) -> dict:
+    overrides = overrides or {}
     g = constants["global"]
     wb = constants["workbench"]
     dep = constants["deployments"]
@@ -102,7 +109,7 @@ def simulate_one(constants: dict, rng: random.Random) -> dict:
     )
 
     # Hardware selection
-    hardware_key = rng.choice(list(wb["hardware"].keys()))
+    hardware_key = _pick(rng, list(wb["hardware"].keys()), overrides.get("hardware"))
     hardware_cfg = wb["hardware"][hardware_key]
     state.node_cost = hardware_cfg["node_cost"]
     state.link_quality += hardware_cfg["link_quality_delta"]
@@ -121,24 +128,38 @@ def simulate_one(constants: dict, rng: random.Random) -> dict:
     add_ons = wb.get("add_ons", {})
     case_fee = int(add_ons.get("weatherproof_case", {}).get("fee", 40))
     solar_fee = int(add_ons.get("solar_panel", {}).get("fee", 40))
-    # Heuristic: if you can afford both, 55% chance to buy both; otherwise sometimes buy one.
-    if state.budget >= case_fee + solar_fee and rng.random() < 0.55:
+    add_on_override = overrides.get("add_ons")
+    if add_on_override == "both" and state.budget >= case_fee + solar_fee:
         state.weatherproof_case = True
         state.solar_panel = True
         state.budget -= case_fee + solar_fee
-    elif state.budget >= case_fee and rng.random() < 0.2:
+    elif add_on_override == "case" and state.budget >= case_fee:
         state.weatherproof_case = True
         state.budget -= case_fee
-    elif state.budget >= solar_fee and rng.random() < 0.2:
+    elif add_on_override == "solar" and state.budget >= solar_fee:
         state.solar_panel = True
         state.budget -= solar_fee
+    elif add_on_override == "none":
+        pass  # purchase nothing
+    else:
+        # Heuristic: if you can afford both, 55% chance to buy both; otherwise sometimes buy one.
+        if state.budget >= case_fee + solar_fee and rng.random() < 0.55:
+            state.weatherproof_case = True
+            state.solar_panel = True
+            state.budget -= case_fee + solar_fee
+        elif state.budget >= case_fee and rng.random() < 0.2:
+            state.weatherproof_case = True
+            state.budget -= case_fee
+        elif state.budget >= solar_fee and rng.random() < 0.2:
+            state.solar_panel = True
+            state.budget -= solar_fee
 
     # Firmware
     firmware_options = []
     if state.budget >= wb["firmware"]["stable"]["fee"]:
         firmware_options.append("stable")
     firmware_options.append("alpha")
-    firmware_key = rng.choice(firmware_options)
+    firmware_key = _pick(rng, firmware_options, overrides.get("firmware"))
     firmware_cfg = wb["firmware"][firmware_key]
     state.budget -= firmware_cfg["fee"]
     state.stable_firmware = firmware_cfg["stable_firmware"]
@@ -146,20 +167,20 @@ def simulate_one(constants: dict, rng: random.Random) -> dict:
     state.link_quality += firmware_cfg["link_quality_delta"]
 
     # Frequency
-    freq_key = rng.choice(list(wb["frequency_plan"].keys()))
+    freq_key = _pick(rng, list(wb["frequency_plan"].keys()), overrides.get("frequency_plan"))
     freq_cfg = wb["frequency_plan"][freq_key]
     state.valid_band = freq_cfg["valid_band"]
     state.link_quality += freq_cfg["link_quality_delta"]
 
     # Preset
-    preset_key = rng.choice(list(wb["preset"].keys()))
+    preset_key = _pick(rng, list(wb["preset"].keys()), overrides.get("preset"))
     preset_cfg = wb["preset"][preset_key]
     state.valid_preset = preset_cfg["valid_preset"]
     state.battery_fragile = state.battery_fragile or preset_cfg["battery_fragile"]
     state.link_quality += preset_cfg["link_quality_delta"]
 
     # Security
-    security_key = rng.choice(list(wb["security"].keys()))
+    security_key = _pick(rng, list(wb["security"].keys()), overrides.get("security"))
     state.encryption = wb["security"][security_key]["encryption"]
 
     # Deployments
@@ -264,9 +285,9 @@ def simulate_one(constants: dict, rng: random.Random) -> dict:
     }
 
 
-def run_simulation(constants: dict, runs: int, seed: int) -> dict:
+def run_simulation(constants: dict, runs: int, seed: int, overrides: dict | None = None) -> dict:
     rng = random.Random(seed)
-    outcomes = [simulate_one(constants, rng) for _ in range(runs)]
+    outcomes = [simulate_one(constants, rng, overrides) for _ in range(runs)]
     endings = Counter(o["ending"] for o in outcomes)
 
     return {
@@ -278,6 +299,39 @@ def run_simulation(constants: dict, runs: int, seed: int) -> dict:
         "avg_coverage": mean(o["coverage"] for o in outcomes),
         "avg_supplies": mean(o["supplies"] for o in outcomes),
         "avg_nodes_used": mean(o["nodes_used"] for o in outcomes),
+    }
+
+
+def stratified_sweep(constants: dict, runs_per_stratum: int, seed: int) -> dict:
+    """For each stratifiable workbench variable, force one value at a time
+    while randomizing the rest of the choices. Returns a nested dict keyed by
+    variable name then value, with the same shape as run_simulation's output.
+    """
+    wb = constants["workbench"]
+    strata_values: dict[str, list[str]] = {
+        "hardware": list(wb["hardware"].keys()),
+        "firmware": ["stable", "alpha"],
+        "frequency_plan": list(wb["frequency_plan"].keys()),
+        "preset": list(wb["preset"].keys()),
+        "security": list(wb["security"].keys()),
+        "add_ons": ["none", "case", "solar", "both"],
+    }
+
+    results: dict[str, dict[str, dict]] = {}
+    salt = 0
+    for variable, values in strata_values.items():
+        results[variable] = {}
+        for value in values:
+            overrides = {variable: value}
+            sub_seed = seed + 1_000 * (salt + 1)
+            results[variable][value] = run_simulation(
+                constants, runs=runs_per_stratum, seed=sub_seed, overrides=overrides
+            )
+            salt += 1
+
+    return {
+        "runs_per_stratum": runs_per_stratum,
+        "variables": results,
     }
 
 
@@ -319,7 +373,40 @@ def sweep_tuning(constants: dict, seed: int) -> list[dict]:
     return sorted(candidates, key=lambda x: x["score"], reverse=True)
 
 
-def write_report(report_path: Path, baseline: dict, sweep_results: list[dict], runs: int, seed: int) -> None:
+def _format_strata_section(strata: dict | None) -> list[str]:
+    if not strata:
+        return []
+    lines: list[str] = []
+    lines.append("## Stratified sweep")
+    lines.append("")
+    lines.append(
+        f"Each row forces one workbench decision to a specific value and randomizes the rest. "
+        f"{strata['runs_per_stratum']} runs per stratum."
+    )
+    lines.append("")
+    for variable, values in strata["variables"].items():
+        lines.append(f"### {variable}")
+        lines.append("")
+        lines.append("| value | A | B | C | D | avg coverage | avg budget | avg supplies |")
+        lines.append("|-------|---|---|---|---|--------------|------------|--------------|")
+        for value, result in values.items():
+            rates = result["ending_rates"]
+            lines.append(
+                f"| `{value}` | {rates['A']:.1%} | {rates['B']:.1%} | {rates['C']:.1%} | {rates['D']:.1%} | "
+                f"{result['avg_coverage']:.2f} | ${result['avg_budget']:.0f} | {result['avg_supplies']:.2f} |"
+            )
+        lines.append("")
+    return lines
+
+
+def write_report(
+    report_path: Path,
+    baseline: dict,
+    sweep_results: list[dict],
+    runs: int,
+    seed: int,
+    strata: dict | None = None,
+) -> None:
     top = sweep_results[:5]
     current = next((r for r in sweep_results if r["is_current_config"]), None)
 
@@ -364,6 +451,8 @@ def write_report(report_path: Path, baseline: dict, sweep_results: list[dict], r
     lines.append("- Keep this recommendation as a balancing target, then re-run the simulation after each gameplay adjustment.")
     lines.append("")
 
+    lines.extend(_format_strata_section(strata))
+
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text("\n".join(lines), encoding="utf-8")
 
@@ -375,24 +464,47 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--report", default="reports/monte_carlo_report.md", help="Output markdown report path")
     parser.add_argument("--out-json", default="reports/monte_carlo_report.json", help="Output JSON report path")
+    parser.add_argument(
+        "--strata-runs",
+        type=int,
+        default=2000,
+        help="Runs per stratum for the stratified sweep (one decision forced, others random).",
+    )
+    parser.add_argument(
+        "--no-strata",
+        action="store_true",
+        help="Skip the stratified sweep (baseline + tuning grid only).",
+    )
     args = parser.parse_args()
 
     constants = json.loads(Path(args.config).read_text(encoding="utf-8"))
     baseline = run_simulation(constants, runs=args.runs, seed=args.seed)
     sweep_results = sweep_tuning(constants, seed=args.seed)
 
+    strata = None
+    if not args.no_strata:
+        strata = stratified_sweep(constants, runs_per_stratum=args.strata_runs, seed=args.seed)
+
     report_path = Path(args.report)
-    write_report(report_path, baseline, sweep_results, args.runs, args.seed)
+    write_report(report_path, baseline, sweep_results, args.runs, args.seed, strata=strata)
 
     out = {
         "baseline": baseline,
         "top_tuning_candidates": sweep_results[:10],
     }
+    if strata is not None:
+        out["strata"] = strata
     out_json_path = Path(args.out_json)
     out_json_path.parent.mkdir(parents=True, exist_ok=True)
     out_json_path.write_text(json.dumps(out, indent=2), encoding="utf-8")
 
     print(f"[OK] Baseline simulation complete: {args.runs} runs")
+    if strata is not None:
+        total_strata = sum(len(values) for values in strata["variables"].values())
+        print(
+            f"[OK] Stratified sweep complete: {total_strata} strata x {args.strata_runs} runs each "
+            f"({total_strata * args.strata_runs} total)"
+        )
     print(f"[OK] Report written: {report_path}")
     print(f"[OK] JSON written: {out_json_path}")
     return 0

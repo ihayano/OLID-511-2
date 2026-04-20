@@ -16,6 +16,11 @@
         "node_cost": 30,
         "link_quality_delta": 0
       },
+      "tbeam": {
+        "label": "LilyGO T-Beam",
+        "node_cost": 40,
+        "link_quality_delta": 0
+      },
       "rak": {
         "label": "RAK WisBlock",
         "node_cost": 50,
