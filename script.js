@@ -65,10 +65,6 @@ const dom = {
   hardware: document.getElementById("hardware-stat"),
   nodes: document.getElementById("nodes-stat"),
   builderBadge: document.getElementById("builder-badge"),
-  mapGrid: document.getElementById("map-grid"),
-  mapSummary: document.getElementById("map-summary"),
-  mapPrev: document.getElementById("map-prev"),
-  mapNext: document.getElementById("map-next"),
   nodeList: document.getElementById("node-list"),
   workbenchPanel: document.getElementById("workbench-panel"),
   workbenchSections: document.getElementById("workbench-sections"),
@@ -280,46 +276,6 @@ async function playBootSequence(runToken) {
   dom.bootScreen.setAttribute("aria-hidden", "true");
 }
 
-function badgeClass(status) {
-  if (status === "deployed") {
-    return "active";
-  }
-  if (status === "skipped") {
-    return "skipped";
-  }
-  if (status === "weak") {
-    return "failed";
-  }
-  return "pending";
-}
-
-function renderMap() {
-  dom.mapGrid.innerHTML = "";
-  let resolvedCount = 0;
-
-  locationDefinitions.forEach((location) => {
-    const info = state.locationStatuses[location.key];
-    if (info.resolved) {
-      resolvedCount += 1;
-    }
-    const card = document.createElement("article");
-    card.className = "map-card";
-    card.innerHTML = `
-      <h3>${location.title}</h3>
-      <p>${location.contact} // ${location.elevation}<br />${location.detail}</p>
-      <div class="badge-row">
-        <span class="badge ${badgeClass(info.status)}">${info.status}</span>
-      </div>
-      <p>${info.note}</p>
-    `;
-    dom.mapGrid.appendChild(card);
-  });
-
-  dom.mapSummary.textContent = `${resolvedCount} / ${locationDefinitions.length} resolved`;
-  dom.mapPrev.disabled = true;
-  dom.mapNext.disabled = true;
-}
-
 function renderNodeLedger() {
   dom.nodeList.innerHTML = "";
 
@@ -339,7 +295,6 @@ function renderNodeLedger() {
 
 function refreshUi() {
   updateStats();
-  renderMap();
   renderNodeLedger();
 }
 
@@ -1595,12 +1550,6 @@ function bindControls() {
       downloadRunLog();
     });
   }
-
-  dom.mapPrev.addEventListener("click", () => {
-  });
-
-  dom.mapNext.addEventListener("click", () => {
-  });
 
   document.addEventListener("keydown", (event) => {
     if (event.defaultPrevented) {
