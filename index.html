@@ -4,123 +4,110 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Project Intermesh</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
-    <div class="crt-shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Community Mesh Build Console</p>
-          <h1>PROJECT INTERMESH</h1>
-        </div>
-        <div class="topbar-actions">
-          <button id="restart-button" class="secondary-button" type="button">Restart Run</button>
-        </div>
-      </header>
-
-      <main class="layout">
-        <section class="panel terminal-panel">
-          <div class="panel-header">
-            <span>Terminal Feed</span>
-            <span id="builder-badge">Builder: UNASSIGNED // T-84H</span>
+  <body class="intermesh-app">
+    <div id="boot-screen" class="boot-screen" aria-hidden="true">
+      <div class="boot-screen__inner">
+        <p class="boot-screen__line">PROJECT INTERMESH DOS TERMINAL v1.0</p>
+        <p class="boot-screen__line">MEMORY CHECK 640K OK</p>
+        <p class="boot-screen__line">MESH ROUTING STACK ........ READY</p>
+        <p class="boot-screen__line">COMMUNITY NODE CONSOLE .... READY</p>
+        <p class="boot-screen__line">LOADING EMERGENCY SCENARIO...</p>
+      </div>
+    </div>
+    <div class="app-frame">
+      <div class="crt-shell">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Community Mesh Build Console</p>
+            <h1>PROJECT INTERMESH</h1>
           </div>
-          <div id="terminal" class="terminal" aria-live="polite"></div>
-
-          <div id="input-zone" class="input-zone hidden">
-            <label id="input-label" for="builder-input">Input</label>
-            <div class="input-row">
-              <input
-                id="builder-input"
-                name="builder-input"
-                type="text"
-                maxlength="24"
-                autocomplete="off"
-                spellcheck="false"
-                placeholder="Enter your name"
-              />
-              <button id="input-submit" type="button">Transmit</button>
-            </div>
+          <div class="topbar-actions">
+            <button id="theme-toggle" class="secondary-button btn btn-outline-light mr-2" type="button" aria-label="Toggle screen theme">Theme: GREEN</button>
+            <button id="download-log-button" class="secondary-button btn btn-outline-light mr-2" type="button" title="Download your run log as JSON">Download Log</button>
+            <button id="restart-button" class="secondary-button btn btn-outline-light" type="button">Restart Run</button>
           </div>
+        </header>
 
-          <div id="workbench-panel" class="workbench-panel hidden" aria-hidden="true">
-            <div class="workbench-head">
-              <h2 class="workbench-title">Workbench checkout</h2>
-              <p id="workbench-budget-hint" class="workbench-hint"></p>
-            </div>
-            <div id="workbench-sections"></div>
-            <div class="workbench-footer">
-              <p id="workbench-total-line" class="workbench-total"></p>
-              <button id="workbench-confirm" type="button" class="choice-card workbench-confirm" disabled>
-                <strong>Confirm build</strong>
-                <span>Apply all selections and continue.</span>
-              </button>
-            </div>
-          </div>
-
-          <div id="choice-panel" class="choice-panel"></div>
+        <section class="status-strip">
+          <article class="status-chip">
+            <span class="stat-label">Budget</span>
+            <strong id="budget-stat">$340</strong>
+          </article>
+          <article class="status-chip">
+            <span class="stat-label">Coverage</span>
+            <strong id="coverage-stat">0%</strong>
+          </article>
+          <article class="status-chip">
+            <span class="stat-label">Encryption</span>
+            <strong id="encryption-stat">OFF</strong>
+          </article>
+          <article class="status-chip">
+            <span class="stat-label">Supplies</span>
+            <strong id="supplies-stat">0</strong>
+          </article>
+          <article class="status-chip">
+            <span class="stat-label">Hours Remaining</span>
+            <strong id="hours-stat">84H</strong>
+          </article>
+          <article class="status-chip status-chip--wide">
+            <span class="stat-label">Hardware</span>
+            <strong id="hardware-stat">Not selected</strong>
+          </article>
+          <article class="status-chip status-chip--wide">
+            <span class="stat-label">Nodes Used / Purchased</span>
+            <strong id="nodes-stat">0 / 0</strong>
+          </article>
         </section>
 
-        <aside class="sidebar">
-          <section class="panel status-panel">
-            <div class="panel-header">
-              <span>Field Status</span>
-              <span>T-84H</span>
+        <main class="screen-layout">
+          <section class="screen-main">
+            <div class="screen-head">
+              <span>Terminal Feed</span>
+              <span id="builder-badge">Builder: UNASSIGNED // T-84H</span>
             </div>
-            <div class="stats-grid">
-              <article class="stat-card">
-                <span class="stat-label">Budget</span>
-                <strong id="budget-stat">$340</strong>
-              </article>
-              <article class="stat-card">
-                <span class="stat-label">Coverage</span>
-                <strong id="coverage-stat">0%</strong>
-              </article>
-              <article class="stat-card">
-                <span class="stat-label">Encryption</span>
-                <strong id="encryption-stat">OFF</strong>
-              </article>
-              <article class="stat-card">
-                <span class="stat-label">Supplies</span>
-                <strong id="supplies-stat">0</strong>
-              </article>
-              <article class="stat-card">
-                <span class="stat-label">Hours Remaining</span>
-                <strong id="hours-stat">84H</strong>
-              </article>
-            </div>
-            <div class="status-meta">
-              <div>
-                <span class="meta-label">Hardware</span>
-                <strong id="hardware-stat">Not selected</strong>
-              </div>
-              <div>
-                <span class="meta-label">Nodes Used / Purchased</span>
-                <strong id="nodes-stat">0 / 0</strong>
+
+            <div id="terminal" class="terminal" aria-live="polite"></div>
+
+            <div id="input-zone" class="input-zone hidden">
+              <label id="input-label" for="builder-input">Input</label>
+              <div class="input-row">
+                <input
+                  id="builder-input"
+                  name="builder-input"
+                  class="form-control"
+                  type="text"
+                  maxlength="24"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="Enter your name"
+                />
+                <button id="input-submit" class="btn btn-primary" type="button">Transmit</button>
               </div>
             </div>
+
+            <div id="workbench-panel" class="workbench-panel hidden" aria-hidden="true">
+              <div class="workbench-head">
+                <h2 class="workbench-title">Workbench Planning</h2>
+                <p id="workbench-budget-hint" class="workbench-hint"></p>
+              </div>
+              <div id="workbench-sections"></div>
+              <div class="workbench-footer">
+                <p id="workbench-total-line" class="workbench-total"></p>
+                <button id="workbench-confirm" type="button" class="choice-card workbench-confirm btn btn-primary btn-lg btn-block" disabled>
+                  <strong>Commit Resources</strong>
+                  <span>Lock this loadout and begin deployment.</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="choice-panel" class="choice-panel"></div>
           </section>
 
-          <section class="panel map-panel">
-            <div class="panel-header">
-              <span>Possible Deployment Sites</span>
-              <div class="map-nav">
-                <button id="map-prev" class="secondary-button" type="button" aria-label="Previous location">&larr;</button>
-                <span id="map-summary">0 / 6 resolved</span>
-                <button id="map-next" class="secondary-button" type="button" aria-label="Next location">&rarr;</button>
-              </div>
-            </div>
-            <div id="map-grid" class="map-grid"></div>
-          </section>
-
-          <section class="panel node-panel">
-            <div class="panel-header">
-              <span>Deployment Ledger</span>
-              <span>Live</span>
-            </div>
-            <ul id="node-list" class="node-list"></ul>
-          </section>
-        </aside>
-      </main>
+        </main>
+      </div>
     </div>
 
     <noscript>
@@ -129,6 +116,8 @@
       </div>
     </noscript>
 
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="analytics.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

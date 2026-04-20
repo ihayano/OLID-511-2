@@ -1,0 +1,11 @@
+Remove Deployment Ledger and collapse layout to one column
+
+- Drop the Deployment Ledger <aside> and its <section> from index.html.
+  state.nodesDeployed and addNode() are preserved because they still
+  feed the Nodes Used/Purchased status chip, ending copy, and analytics.
+- Remove dom.nodeList, renderNodeLedger(), and the refreshUi() call
+  site from script.js.
+- Simplify styles.css: drop the .screen-side / .side-section /
+  .node-list selectors, collapse .screen-layout from a two-column grid
+  to a single block, and remove the now-redundant 1200px responsive
+  override.

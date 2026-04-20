@@ -65,22 +65,24 @@ const dom = {
   hardware: document.getElementById("hardware-stat"),
   nodes: document.getElementById("nodes-stat"),
   builderBadge: document.getElementById("builder-badge"),
-  mapGrid: document.getElementById("map-grid"),
-  mapSummary: document.getElementById("map-summary"),
-  mapPrev: document.getElementById("map-prev"),
-  mapNext: document.getElementById("map-next"),
-  nodeList: document.getElementById("node-list"),
   workbenchPanel: document.getElementById("workbench-panel"),
   workbenchSections: document.getElementById("workbench-sections"),
   workbenchBudgetHint: document.getElementById("workbench-budget-hint"),
   workbenchTotalLine: document.getElementById("workbench-total-line"),
   workbenchConfirm: document.getElementById("workbench-confirm"),
+  themeToggle: document.getElementById("theme-toggle"),
+  downloadLogButton: document.getElementById("download-log-button"),
+  bootScreen: document.getElementById("boot-screen"),
 };
 
-const typingDelay = 8;
-const pauseBetweenLines = 120;
+const typingDelay = 22;
+const pauseBetweenLines = 220;
+const bootLineRevealDelay = 420;
+const bootExitDelay = 1100;
+const themeStorageKey = "project-intermesh-theme";
 let currentRunToken = 0;
 let currentMapIndex = 0;
+let activeCursorRow = null;
 
 function createInitialState() {
   const locationStatuses = {};
@@ -118,8 +120,9 @@ function createInitialState() {
     yoshikoDrive: false,
     batteryFragile: false,
     hoursRemaining: 84,
-    weatherproofCase: false,
-    solarPanel: false,
+    weatherproofCases: 0,
+    solarPanels: 0,
+    catCarrier: false,
     locationStatuses,
   };
 }
@@ -130,8 +133,36 @@ function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+function setActiveCursor(row) {
+  if (activeCursorRow && activeCursorRow !== row) {
+    activeCursorRow.classList.remove("typing");
+  }
+
+  activeCursorRow = row || null;
+
+  if (activeCursorRow) {
+    activeCursorRow.classList.add("typing");
+  }
+}
+
 function clearChoices() {
   dom.choicePanel.innerHTML = "";
+}
+
+function bindButtonChoice(button, onPick) {
+  button.addEventListener("click", () => {
+    if (button.disabled) {
+      return;
+    }
+
+    hideInput();
+    onPick();
+  });
+}
+
+function clearTerminal() {
+  setActiveCursor(null);
+  dom.terminal.innerHTML = "";
 }
 
 function showInput(label, placeholder = "") {
@@ -161,9 +192,11 @@ async function typeLine(text, className = "", runToken = currentRunToken) {
   }
 
   const row = appendLineElement(className);
+  setActiveCursor(row);
 
   for (let index = 0; index < text.length; index += 1) {
     if (runToken !== currentRunToken) {
+      setActiveCursor(null);
       return;
     }
 
@@ -172,6 +205,7 @@ async function typeLine(text, className = "", runToken = currentRunToken) {
     await wait(typingDelay);
   }
 
+  setActiveCursor(null);
   await wait(pauseBetweenLines);
 }
 
@@ -192,77 +226,57 @@ function updateStats() {
   dom.builderBadge.textContent = `Builder: ${state.builderName} // T-${state.hoursRemaining}H`;
 }
 
-function badgeClass(status) {
-  if (status === "deployed") {
-    return "active";
-  }
-  if (status === "skipped") {
-    return "skipped";
-  }
-  if (status === "weak") {
-    return "failed";
-  }
-  return "pending";
+function applyTheme(theme) {
+  const nextTheme = theme === "amber" ? "amber" : "green";
+  document.body.dataset.theme = nextTheme;
+  dom.themeToggle.textContent = `Theme: ${nextTheme.toUpperCase()}`;
+  window.localStorage.setItem(themeStorageKey, nextTheme);
 }
 
-function renderMap() {
-  dom.mapGrid.innerHTML = "";
-  let resolvedCount = 0;
-
-  locationDefinitions.forEach((location) => {
-    const info = state.locationStatuses[location.key];
-    if (info.resolved) {
-      resolvedCount += 1;
-    }
-  });
-
-  if (currentMapIndex < 0) {
-    currentMapIndex = 0;
-  }
-  if (currentMapIndex >= locationDefinitions.length) {
-    currentMapIndex = locationDefinitions.length - 1;
-  }
-
-  const location = locationDefinitions[currentMapIndex];
-  const info = state.locationStatuses[location.key];
-  const card = document.createElement("article");
-  card.className = "map-card";
-  card.innerHTML = `
-    <h3>${location.title}</h3>
-    <p>${location.contact} // ${location.elevation}<br />${location.detail}</p>
-    <div class="badge-row">
-      <span class="badge ${badgeClass(info.status)}">${info.status}</span>
-    </div>
-    <p>${info.note}</p>
-  `;
-  dom.mapGrid.appendChild(card);
-
-  dom.mapSummary.textContent = `${resolvedCount} / ${locationDefinitions.length} resolved // ${currentMapIndex + 1}/${locationDefinitions.length}`;
-  dom.mapPrev.disabled = currentMapIndex === 0;
-  dom.mapNext.disabled = currentMapIndex === locationDefinitions.length - 1;
+function toggleTheme() {
+  const currentTheme = document.body.dataset.theme === "amber" ? "amber" : "green";
+  applyTheme(currentTheme === "green" ? "amber" : "green");
 }
 
-function renderNodeLedger() {
-  dom.nodeList.innerHTML = "";
+function initializeTheme() {
+  const storedTheme = window.localStorage.getItem(themeStorageKey);
+  applyTheme(storedTheme === "amber" ? "amber" : "green");
+}
 
-  if (!state.nodesDeployed.length) {
-    const empty = document.createElement("li");
-    empty.textContent = "No nodes deployed yet.";
-    dom.nodeList.appendChild(empty);
+async function playBootSequence(runToken) {
+  if (runToken !== currentRunToken) {
     return;
   }
 
-  state.nodesDeployed.forEach((node) => {
-    const item = document.createElement("li");
-    item.innerHTML = `<strong>${node.location}</strong><br />${node.hardware} // ${node.note}`;
-    dom.nodeList.appendChild(item);
+  dom.bootScreen.classList.add("boot-screen--visible");
+  dom.bootScreen.setAttribute("aria-hidden", "false");
+
+  const lines = Array.from(dom.bootScreen.querySelectorAll(".boot-screen__line"));
+  lines.forEach((line) => {
+    line.classList.remove("is-visible");
   });
+
+  for (const line of lines) {
+    if (runToken !== currentRunToken) {
+      return;
+    }
+
+    line.classList.add("is-visible");
+    await wait(bootLineRevealDelay);
+  }
+
+  await wait(bootExitDelay);
+
+  if (runToken !== currentRunToken) {
+    return;
+  }
+
+  dom.bootScreen.classList.remove("boot-screen--visible");
+  dom.bootScreen.setAttribute("aria-hidden", "true");
 }
 
 function refreshUi() {
   updateStats();
-  renderMap();
-  renderNodeLedger();
 }
 
 function changeBudget(amount) {
@@ -377,11 +391,7 @@ function createChoiceButton(option, resolve) {
     }
   }
 
-  button.addEventListener("click", async () => {
-    clearChoices();
-    hideInput();
-    resolve(option.value);
-  });
+  bindButtonChoice(button, () => resolve(option.value));
 
   dom.choicePanel.appendChild(button);
 }
@@ -456,14 +466,20 @@ async function introSequence(runToken) {
 
 function getNodeCostForHardware(hw) {
   if (hw === "heltec") return 30;
+  if (hw === "tbeam") return 40;
   if (hw === "rak") return 50;
   return 0;
 }
 
-function getAddOnCost(addOn) {
-  if (addOn === "both") return 80;
-  if (addOn === "case" || addOn === "solar") return 40;
-  return 0;
+const CASE_UNIT_COST = 40;
+const SOLAR_UNIT_COST = 40;
+const CAT_CARRIER_COST = 50;
+
+function getAddOnCost(draft) {
+  const cases = draft.cases || 0;
+  const solar = draft.solar || 0;
+  const carrier = draft.catCarrier === "yes" ? CAT_CARRIER_COST : 0;
+  return cases * CASE_UNIT_COST + solar * SOLAR_UNIT_COST + carrier;
 }
 
 function workbenchFirmwareCost(firmware) {
@@ -473,13 +489,13 @@ function workbenchFirmwareCost(firmware) {
 function workbenchCartTotal(draft) {
   const nc = getNodeCostForHardware(draft.hardware);
   const nodes = draft.nodes != null ? draft.nodes : 0;
-  return nodes * nc + getAddOnCost(draft.addOn) + workbenchFirmwareCost(draft.firmware);
+  return nodes * nc + getAddOnCost(draft) + workbenchFirmwareCost(draft.firmware);
 }
 
 function workbenchMaxNodes(draft, budgetStart) {
   const nc = getNodeCostForHardware(draft.hardware);
   if (!nc) return 0;
-  const reserved = getAddOnCost(draft.addOn) + workbenchFirmwareCost(draft.firmware);
+  const reserved = getAddOnCost(draft) + workbenchFirmwareCost(draft.firmware);
   const left = budgetStart - reserved;
   if (left < nc) return 0;
   return Math.min(6, Math.floor(left / nc));
@@ -520,10 +536,7 @@ function workbenchAddRow(container, title, options, onPick, selectedValue) {
     if (selectedValue === opt.value) {
       btn.classList.add("workbench-selected");
     }
-    btn.addEventListener("click", () => {
-      if (btn.disabled) return;
-      onPick(opt.value);
-    });
+    bindButtonChoice(btn, () => onPick(opt.value));
     row.appendChild(btn);
   });
 
@@ -533,24 +546,16 @@ function workbenchAddRow(container, title, options, onPick, selectedValue) {
 
 function syncWorkbenchFooter(draft, budgetStart) {
   const total = workbenchCartTotal(draft);
-  const allSet = Boolean(
-    draft.hardware &&
-      draft.nodes != null &&
-      draft.addOn != null &&
-      draft.firmware &&
-      draft.frequency &&
-      draft.preset &&
-      draft.security
-  );
+  const required = Boolean(draft.hardware && draft.nodes != null && draft.firmware);
   const over = total > budgetStart;
-  if (allSet && !over) {
+  if (required && !over) {
     dom.workbenchTotalLine.textContent = `Cart total: $${total} // Cash left after checkout: $${budgetStart - total}`;
-  } else if (over && allSet) {
-    dom.workbenchTotalLine.textContent = `Cart total: $${total} — over budget by $${total - budgetStart}. Adjust selections.`;
+  } else if (over && required) {
+    dom.workbenchTotalLine.textContent = `Cart total: $${total} -- over budget by $${total - budgetStart}. Adjust selections.`;
   } else {
-    dom.workbenchTotalLine.textContent = `Cart so far: $${total} // Finish every category to lock in budget.`;
+    dom.workbenchTotalLine.textContent = `Cart so far: $${total} // Pick hardware, node count, and firmware to lock in budget.`;
   }
-  dom.workbenchConfirm.disabled = !allSet || over;
+  dom.workbenchConfirm.disabled = !required || over;
 }
 
 function renderWorkbenchCheckout(draft, budgetStart) {
@@ -558,27 +563,27 @@ function renderWorkbenchCheckout(draft, budgetStart) {
   dom.workbenchSections.replaceChildren();
   const maxN = workbenchMaxNodes(draft, budgetStart);
 
+  const rerender = () => {
+    renderWorkbenchCheckout(draft, budgetStart);
+    syncWorkbenchFooter(draft, budgetStart);
+  };
+
+  const toggle = (field, value) => {
+    draft[field] = draft[field] === value ? null : value;
+    rerender();
+  };
+
   workbenchAddRow(
     dom.workbenchSections,
-    "1) Hardware (sets price per node)",
+    "1) Hardware",
     [
-      {
-        value: "heltec",
-        label: "Heltec V3",
-        description: "Cheap and common. Less forgiving if you make mistakes.",
-        meta: "Per node: $30",
-      },
-      {
-        value: "rak",
-        label: "RAK WisBlock",
-        description: "Better radios and power draw; every node costs more.",
-        meta: "Per node: $50 // +1 link quality",
-      },
+      { value: "heltec", label: "Heltec V3", description: "", meta: "$30 per node" },
+      { value: "tbeam", label: "LilyGO T-Beam", description: "", meta: "$40 per node" },
+      { value: "rak", label: "RAK WisBlock", description: "", meta: "$50 per node" },
     ],
     (value) => {
       draft.hardware = value;
-      renderWorkbenchCheckout(draft, budgetStart);
-      syncWorkbenchFooter(draft, budgetStart);
+      rerender();
     },
     draft.hardware
   );
@@ -587,174 +592,74 @@ function renderWorkbenchCheckout(draft, budgetStart) {
   for (let n = 1; n <= 6; n += 1) {
     const nc = getNodeCostForHardware(draft.hardware);
     const nodeLineCost = n * nc;
-    const withExtras = nodeLineCost + getAddOnCost(draft.addOn) + workbenchFirmwareCost(draft.firmware);
     nodeOptions.push({
       value: n,
       label: `${n} node${n === 1 ? "" : "s"}`,
-      description: nc ? `Subtotal ${n} × $${nc} = $${nodeLineCost}` : "Pick hardware first.",
-      meta: !draft.hardware ? "Locked" : withExtras > budgetStart ? "Over budget with current add-on/firmware" : "Within budget",
+      description: "",
+      meta: nc ? `$${nodeLineCost}` : "",
       disabled: !draft.hardware || n > maxN,
     });
   }
   workbenchAddRow(
     dom.workbenchSections,
-    "2) How many nodes to buy (max 6 sites)",
+    "2) How many nodes to buy (max 6)",
     nodeOptions,
     (value) => {
       draft.nodes = value;
-      renderWorkbenchCheckout(draft, budgetStart);
-      syncWorkbenchFooter(draft, budgetStart);
+      rerender();
     },
     draft.nodes
   );
 
   workbenchAddRow(
     dom.workbenchSections,
-    "3) Add-ons (need both for science roof + radio tower)",
+    "3) Weatherproof cases (optional)",
     [
-      {
-        value: "both",
-        label: "Weatherproof case + Solar panel",
-        description: "Enables science roof + radio tower installs.",
-        meta: "Cost: $80",
-      },
-      {
-        value: "case",
-        label: "Weatherproof case",
-        description: "Outdoor protection only.",
-        meta: "Cost: $40",
-      },
-      {
-        value: "solar",
-        label: "Solar panel",
-        description: "Power endurance only.",
-        meta: "Cost: $40",
-      },
-      {
-        value: "none",
-        label: "Skip add-ons",
-        description: "Save cash; rooftop/tower installs stay locked.",
-        meta: "Cost: $0",
-      },
+      { value: 1, label: "1 case", description: "", meta: `$${CASE_UNIT_COST}` },
+      { value: 2, label: "2 cases", description: "", meta: `$${CASE_UNIT_COST * 2}` },
     ],
-    (value) => {
-      draft.addOn = value;
-      renderWorkbenchCheckout(draft, budgetStart);
-      syncWorkbenchFooter(draft, budgetStart);
-    },
-    draft.addOn
+    (value) => toggle("cases", value),
+    draft.cases
   );
 
   workbenchAddRow(
     dom.workbenchSections,
-    "4) Firmware",
+    "4) Solar panels (optional)",
+    [
+      { value: 1, label: "1 panel", description: "", meta: `$${SOLAR_UNIT_COST}` },
+      { value: 2, label: "2 panels", description: "", meta: `$${SOLAR_UNIT_COST * 2}` },
+    ],
+    (value) => toggle("solar", value),
+    draft.solar
+  );
+
+  workbenchAddRow(
+    dom.workbenchSections,
+    "5) Portable cat carrier (optional)",
     [
       {
-        value: "stable",
-        label: "Stable mesh firmware",
-        description: "Trusted build for storm prep.",
-        meta: "Cost: $10",
+        value: "yes",
+        label: "Portable cat carrier",
+        description: "",
+        meta: `$${CAT_CARRIER_COST}`,
       },
-      {
-        value: "alpha",
-        label: "Alpha nightly",
-        description: "Experimental; battery and routing risk.",
-        meta: "Cost: $0",
-      },
+    ],
+    (value) => toggle("catCarrier", value),
+    draft.catCarrier
+  );
+
+  workbenchAddRow(
+    dom.workbenchSections,
+    "6) Firmware",
+    [
+      { value: "stable", label: "Stable firmware", description: "", meta: "$10" },
+      { value: "alpha", label: "Alpha firmware", description: "", meta: "$0" },
     ],
     (value) => {
       draft.firmware = value;
-      renderWorkbenchCheckout(draft, budgetStart);
-      syncWorkbenchFooter(draft, budgetStart);
+      rerender();
     },
     draft.firmware
-  );
-
-  workbenchAddRow(
-    dom.workbenchSections,
-    "5) Frequency plan",
-    [
-      {
-        value: "us915",
-        label: "US 915 MHz",
-        description: "Legal here; behaves correctly.",
-        meta: "Compliance safe",
-      },
-      {
-        value: "eu868",
-        label: "EU 868 MHz",
-        description: "Wrong region for this area.",
-        meta: "Illegal locally // link penalty",
-      },
-      {
-        value: "lab433",
-        label: "433 MHz lab profile",
-        description: "Dangerous experiment.",
-        meta: "Do not do this",
-      },
-    ],
-    (value) => {
-      draft.frequency = value;
-      renderWorkbenchCheckout(draft, budgetStart);
-      syncWorkbenchFooter(draft, budgetStart);
-    },
-    draft.frequency
-  );
-
-  workbenchAddRow(
-    dom.workbenchSections,
-    "6) Mesh preset",
-    [
-      {
-        value: "longfast",
-        label: "Long Range - Fast",
-        description: "Best balance for emergency text across town.",
-        meta: "Recommended",
-      },
-      {
-        value: "balanced",
-        label: "Balanced",
-        description: "Gives up reach.",
-        meta: "Coverage penalty",
-      },
-      {
-        value: "turbo",
-        label: "Turbo throughput",
-        description: "Fast bursts; bad endurance.",
-        meta: "Battery risk",
-      },
-    ],
-    (value) => {
-      draft.preset = value;
-      renderWorkbenchCheckout(draft, budgetStart);
-      syncWorkbenchFooter(draft, budgetStart);
-    },
-    draft.preset
-  );
-
-  workbenchAddRow(
-    dom.workbenchSections,
-    "7) Security",
-    [
-      {
-        value: "secure",
-        label: "Generate AES-256 key",
-        description: "Private channel; safer mutual aid.",
-        meta: "Secure comms",
-      },
-      {
-        value: "public",
-        label: "Leave channel public",
-        description: "Easier to join; anyone can listen.",
-        meta: "Vulnerable",
-      },
-    ],
-    (value) => {
-      draft.security = value;
-      renderWorkbenchCheckout(draft, budgetStart);
-      syncWorkbenchFooter(draft, budgetStart);
-    },
-    draft.security
   );
 }
 
@@ -762,6 +667,9 @@ function applyWorkbenchSelections(selections) {
   if (selections.hardware === "heltec") {
     state.hardware = "Heltec V3";
     state.nodeCost = 30;
+  } else if (selections.hardware === "tbeam") {
+    state.hardware = "LilyGO T-Beam";
+    state.nodeCost = 40;
   } else {
     state.hardware = "RAK WisBlock";
     state.nodeCost = 50;
@@ -771,9 +679,9 @@ function applyWorkbenchSelections(selections) {
   state.nodesPurchased = selections.nodes;
   state.nodesAvailable = selections.nodes;
 
-  const addOn = selections.addOn;
-  state.weatherproofCase = addOn === "both" || addOn === "case";
-  state.solarPanel = addOn === "both" || addOn === "solar";
+  state.weatherproofCases = selections.cases || 0;
+  state.solarPanels = selections.solar || 0;
+  state.catCarrier = selections.catCarrier === "yes";
 
   if (selections.firmware === "stable") {
     state.stableFirmware = true;
@@ -783,51 +691,29 @@ function applyWorkbenchSelections(selections) {
     state.linkQuality -= 1;
   }
 
-  if (selections.frequency === "us915") {
-    state.validBand = true;
-  } else {
-    state.validBand = false;
-    state.linkQuality -= selections.frequency === "eu868" ? 2 : 3;
-  }
-
-  if (selections.preset === "longfast") {
-    state.validPreset = true;
-  } else if (selections.preset === "balanced") {
-    state.validPreset = false;
-    state.linkQuality -= 1;
-  } else {
-    state.validPreset = false;
-    state.batteryFragile = true;
-    state.linkQuality -= 2;
-  }
-
-  if (selections.security === "secure") {
-    state.encryption = true;
-    state.securityConfigured = true;
-  } else {
-    state.encryption = false;
-    state.securityConfigured = true;
-  }
+  state.validBand = true;
+  state.validPreset = true;
+  state.encryption = true;
+  state.securityConfigured = true;
 
   const total =
-    selections.nodes * state.nodeCost + getAddOnCost(addOn) + workbenchFirmwareCost(selections.firmware);
+    selections.nodes * state.nodeCost + getAddOnCost(selections) + workbenchFirmwareCost(selections.firmware);
   changeBudget(-total);
 }
 
 function runWorkbenchCheckout() {
   const budgetStart = state.budget;
-  dom.workbenchBudgetHint.textContent = `Starting cash: $${budgetStart}. Choose one option in every section. The cart total includes nodes, add-ons, and paid firmware.`;
+  dom.workbenchBudgetHint.textContent = `Starting cash: $${budgetStart}. Hardware, node count, and firmware are required. Everything else is optional -- tap twice to clear a selection.`;
   dom.workbenchPanel.classList.remove("hidden");
   dom.workbenchPanel.setAttribute("aria-hidden", "false");
 
   const draft = {
     hardware: null,
     nodes: null,
-    addOn: null,
+    cases: null,
+    solar: null,
+    catCarrier: null,
     firmware: null,
-    frequency: null,
-    preset: null,
-    security: null,
   };
 
   return new Promise((resolve) => {
@@ -843,6 +729,7 @@ function runWorkbenchCheckout() {
 }
 
 async function actWorkbench(runToken) {
+  clearTerminal();
   await typeBlock(
     [
       "ACT I // THE WORKBENCH",
@@ -854,27 +741,25 @@ async function actWorkbench(runToken) {
   );
 
   const selections = await runWorkbenchCheckout();
+  const budgetBefore = state.budget;
   applyWorkbenchSelections(selections);
+  if (window.IntermeshAnalytics) {
+    window.IntermeshAnalytics.workbenchCommitted(selections, budgetBefore - state.budget, state.budget);
+  }
 
-  const addOnLabel =
-    selections.addOn === "both"
-      ? "weatherproof case + solar panel"
-      : selections.addOn === "case"
-        ? "weatherproof case only"
-        : selections.addOn === "solar"
-          ? "solar panel only"
-          : "no add-ons";
+  const cases = selections.cases || 0;
+  const solar = selections.solar || 0;
+  const extras = [];
+  if (cases > 0) extras.push(`${cases} weatherproof case${cases === 1 ? "" : "s"}`);
+  if (solar > 0) extras.push(`${solar} solar panel${solar === 1 ? "" : "s"}`);
+  if (selections.catCarrier === "yes") extras.push("portable cat carrier");
+  const extrasLine = extras.length ? `Extras: ${extras.join(", ")}.` : "Extras: none.";
 
   await typeBlock(
     [
-      `Build locked: ${state.hardware}, ${selections.nodes} node${selections.nodes === 1 ? "" : "s"}, ${addOnLabel}.`,
-      selections.firmware === "stable"
-        ? "Stable firmware flashed ($10)."
-        : "Alpha firmware flashed — watch battery and routing.",
-      selections.frequency === "us915"
-        ? "Frequency plan: US 915 MHz."
-        : `Frequency plan: ${selections.frequency} — expect link pain.`,
-      `Mesh preset: ${selections.preset}. Security: ${selections.security === "secure" ? "AES-256" : "public channel"}.`,
+      `Build locked: ${state.hardware}, ${selections.nodes} node${selections.nodes === 1 ? "" : "s"}.`,
+      extrasLine,
+      selections.firmware === "stable" ? "Firmware: stable." : "Firmware: alpha.",
       `Cash after checkout: $${state.budget}.`,
     ],
     "success",
@@ -905,8 +790,11 @@ async function deployScience(runToken) {
         value: "data",
         label: "Appeal to telemetry and survival data",
         description: "Promise live weather relays, outage mapping, and a resilient data path for the whole town.",
-        meta: state.weatherproofCase && state.solarPanel ? "Uses 1 node // Roof install enabled" : "Requires case + solar for roof install",
-        disabled: !(state.weatherproofCase && state.solarPanel),
+        meta:
+          state.weatherproofCases >= 1 && state.solarPanels >= 1
+            ? "Uses 1 node + 1 case + 1 solar panel // Roof install enabled"
+            : "Requires 1 case + 1 solar panel for roof install",
+        disabled: !(state.weatherproofCases >= 1 && state.solarPanels >= 1),
       },
       {
         value: "emotion",
@@ -939,6 +827,8 @@ async function deployScience(runToken) {
   if (choice === "data") {
     const gain = addCoverage(12);
     state.scienceRoof = true;
+    state.weatherproofCases = Math.max(0, state.weatherproofCases - 1);
+    state.solarPanels = Math.max(0, state.solarPanels - 1);
     addNode("science", `roof mount secured with professor approval (+${gain}% coverage)`);
     setLocation("science", "deployed", "Roof access granted. The network now has a real spine.");
     await typeLine('"Ansari nods once. "That is an actual argument." He unlocks the roof hatch for you.', "success", runToken);
@@ -1153,8 +1043,11 @@ async function deployRadio(runToken) {
         value: "tower",
         label: "Climb the tower",
         description: "High risk, high payoff. Best possible reach from the station.",
-        meta: state.weatherproofCase && state.solarPanel ? "Uses 1 node // Tower install enabled" : "Requires case + solar for tower install",
-        disabled: !(state.weatherproofCase && state.solarPanel),
+        meta:
+          state.weatherproofCases >= 1 && state.solarPanels >= 1
+            ? "Uses 1 node + 1 case + 1 solar panel // Tower install enabled"
+            : "Requires 1 case + 1 solar panel for tower install",
+        disabled: !(state.weatherproofCases >= 1 && state.solarPanels >= 1),
       },
       {
         value: "lobby",
@@ -1180,6 +1073,8 @@ async function deployRadio(runToken) {
   if (choice === "tower") {
     spendTime(4);
     const gain = addCoverage(7);
+    state.weatherproofCases = Math.max(0, state.weatherproofCases - 1);
+    state.solarPanels = Math.max(0, state.solarPanels - 1);
     addNode("radio", `tower-top mount with Geo spotting the climb (+${gain}% coverage)`);
     setLocation("radio", "deployed", "Tower node mounted above the station roofline.");
     await typeLine("The tower sways, your hands shake, and the new relay paints a clean arc across the city center. The climb costs 4 precious hours.", "success", runToken);
@@ -1259,6 +1154,7 @@ async function deployHealth(runToken) {
 }
 
 async function actDeployment(runToken) {
+  clearTerminal();
   await typeBlock(
     [
       "ACT II // COMMUNITY DEPLOYMENT",
@@ -1310,13 +1206,38 @@ async function actDeployment(runToken) {
       break;
     }
 
+    const before = {
+      budget: state.budget,
+      coverage: state.coverage,
+      supplies: state.supplies,
+      hours: state.hoursRemaining,
+      nodesDeployed: state.nodesDeployed.length,
+    };
     await applyTravelIfNeeded(selected, runToken);
+    const travelBudgetDelta = state.budget - before.budget;
+    const travelHoursDelta = before.hours - state.hoursRemaining;
+
     const handler = handlers[selected];
     await handler(runToken);
+
+    if (window.IntermeshAnalytics) {
+      const status = state.locationStatuses[selected];
+      window.IntermeshAnalytics.locationResolved(selected, {
+        outcome: status ? status.status : "unknown",
+        coverage_delta: state.coverage - before.coverage,
+        supplies_delta: state.supplies - before.supplies,
+        budget_delta: state.budget - before.budget,
+        hours_delta: before.hours - state.hoursRemaining,
+        travel_budget_delta: travelBudgetDelta,
+        travel_hours_delta: travelHoursDelta,
+        node_consumed: state.nodesDeployed.length > before.nodesDeployed,
+      });
+    }
   }
 }
 
 async function actDiagnostics(runToken) {
+  clearTerminal();
   await typeBlock(
     [
       "ACT III // CRISIS AND TROUBLESHOOTING",
@@ -1370,11 +1291,20 @@ async function actDiagnostics(runToken) {
         setLocation("health", "deployed", "Emergency field fix restored clinic routing.");
       }
       await typeLine(`You burn $40 on a last-minute rescue and claw back +${gain}% coverage before the rain starts.`, "success", runToken);
+      if (window.IntermeshAnalytics) {
+        window.IntermeshAnalytics.diagnosticTriggered({ issues, patched: true, coverage_delta: gain, budget_delta: -40 });
+      }
     } else {
       await typeLine("You keep the cash. The dead zones stay exactly where the map warned they would.", "warn", runToken);
+      if (window.IntermeshAnalytics) {
+        window.IntermeshAnalytics.diagnosticTriggered({ issues, patched: false, coverage_delta: 0, budget_delta: 0 });
+      }
     }
   } else {
     await typeLine("Ping sweep returns green across every deployed corridor. No dead zones detected.", "success", runToken);
+    if (window.IntermeshAnalytics) {
+      window.IntermeshAnalytics.diagnosticTriggered({ issues: [], patched: false, coverage_delta: 0, budget_delta: 0 });
+    }
   }
 
   if (!state.validBand) {
@@ -1397,6 +1327,7 @@ async function actDiagnostics(runToken) {
 }
 
 async function actMutualAid(runToken) {
+  clearTerminal();
   await typeBlock(
     [
       "Mutual aid request incoming.",
@@ -1502,7 +1433,33 @@ function determineEnding() {
 }
 
 async function showEnding(runToken) {
+  clearTerminal();
   const ending = determineEnding();
+
+  if (window.IntermeshAnalytics) {
+    const letterMatch = (ending.lines[0] || "").match(/ENDING\s+([A-D])/i);
+    window.IntermeshAnalytics.runEnded({
+      ending: letterMatch ? letterMatch[1].toUpperCase() : "unknown",
+      coverage: state.coverage,
+      budget_left: state.budget,
+      hours_left: state.hoursRemaining,
+      supplies: state.supplies,
+      encryption: state.encryption,
+      security_configured: state.securityConfigured,
+      hardware: state.hardware,
+      nodes_purchased: state.nodesPurchased,
+      nodes_used: state.nodesDeployed.length,
+      valid_band: state.validBand,
+      valid_preset: state.validPreset,
+      stable_firmware: state.stableFirmware,
+      dead_zones: state.deadZones,
+      science_roof: state.scienceRoof,
+      science_missed: state.scienceMissed,
+      solar_support: state.solarSupport,
+      battery_fragile: state.batteryFragile,
+    });
+  }
+
   await typeBlock(ending.lines, ending.className, runToken);
   await typeLine(
     `Final stats // Budget: $${state.budget} // Coverage: ${state.coverage}% // Encryption: ${state.encryption ? "ON" : "OFF"} // Supplies: ${state.supplies}`,
@@ -1537,6 +1494,7 @@ async function runGame(runToken) {
 function resetState() {
   state = createInitialState();
   currentMapIndex = 0;
+  setActiveCursor(null);
   dom.terminal.innerHTML = "";
   clearChoices();
   hideInput();
@@ -1544,22 +1502,52 @@ function resetState() {
   refreshUi();
 }
 
+function downloadRunLog() {
+  if (!window.IntermeshAnalytics) return;
+  const payload = window.IntermeshAnalytics.exportRunsAsJson();
+  const blob = new Blob([payload], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `intermesh-runs-${stamp}.json`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function bindControls() {
   dom.restartButton.addEventListener("click", () => {
     startGame();
   });
 
-  dom.mapPrev.addEventListener("click", () => {
-    if (currentMapIndex > 0) {
-      currentMapIndex -= 1;
-      renderMap();
-    }
+  dom.themeToggle.addEventListener("click", () => {
+    toggleTheme();
   });
 
-  dom.mapNext.addEventListener("click", () => {
-    if (currentMapIndex < locationDefinitions.length - 1) {
-      currentMapIndex += 1;
-      renderMap();
+  if (dom.downloadLogButton) {
+    dom.downloadLogButton.addEventListener("click", () => {
+      downloadRunLog();
+    });
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    const target = event.target;
+    const editingInput =
+      target instanceof HTMLElement &&
+      (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+
+    if (editingInput) {
+      return;
+    }
+
+    if (event.key === "Enter" && !dom.workbenchConfirm.disabled && !dom.workbenchPanel.classList.contains("hidden")) {
+      dom.workbenchConfirm.click();
     }
   });
 }
@@ -1568,10 +1556,19 @@ async function startGame() {
   currentRunToken += 1;
   const runToken = currentRunToken;
   resetState();
+  if (window.IntermeshAnalytics) {
+    window.IntermeshAnalytics.runStarted({
+      starting_budget: state.budget,
+      starting_hours: state.hoursRemaining,
+      theme: document.body.dataset.theme || "green",
+    });
+  }
+  await playBootSequence(runToken);
 
   await runGame(runToken);
 }
 
 bindControls();
+initializeTheme();
 refreshUi();
 startGame();
